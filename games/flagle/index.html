@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flagle | Daily Games</title>
+<link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+
+<div class="wrap">
+  <a class="back-link" href="../../index.html">&larr; back to the shelf</a>
+</div>
+
+<div class="game-shell">
+  <div class="game-header">
+    <h1>Flagle</h1>
+    <p>Guess the country from a zoomed-in flag. It zooms out each guess.</p>
+  </div>
+
+  <div class="flag-viewport">
+    <img id="flag-img" src="" alt="Mystery flag, zoomed in">
+  </div>
+  <div id="attempts-left" class="attempts-left"></div>
+
+  <div id="status" class="status-msg" role="status" aria-live="polite"></div>
+
+  <form id="guess-form" class="guess-form">
+    <input
+      id="guess-input"
+      type="text"
+      list="country-options"
+      placeholder="Type a country name…"
+      autocomplete="off"
+      required>
+    <datalist id="country-options"></datalist>
+    <button type="submit">Guess</button>
+  </form>
+
+  <button id="play-again" class="play-again">Play a random country</button>
+
+  <div id="guess-list" class="guess-list"></div>
+</div>
+
+<script src="countries.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
