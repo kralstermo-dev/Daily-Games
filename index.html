@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Games | a shelf of daily puzzles</title>
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <h1 class="tile-title" aria-label="Daily Games">
+      <span class="tile gray" style="--delay:0.0s">D</span>
+      <span class="tile gray" style="--delay:0.1s">A</span>
+      <span class="tile teal" style="--delay:0.2s">I</span>
+      <span class="tile gold" style="--delay:0.3s">L</span>
+      <span class="tile gold" style="--delay:0.4s">Y</span>
+    </h1>
+    <p class="tagline">
+      A little shelf of daily guessing games — words, flags, colors, and more.
+      Pick a ticket below to play.
+    </p>
+  </header>
+
+  <main>
+    <div class="shelf">
+
+      <a class="ticket live" href="games/wordle/index.html">
+        <span class="ticket-eyebrow">Word Guessing</span>
+        <h2 class="ticket-name">Wordle</h2>
+        <p class="ticket-desc">Guess the 5-letter word in 6 tries. Green means right spot, teal means wrong spot.</p>
+        <div class="mini-grid" aria-hidden="true">
+          <span class="mini-cell gray"></span>
+          <span class="mini-cell teal"></span>
+          <span class="mini-cell gray"></span>
+          <span class="mini-cell gold"></span>
+          <span class="mini-cell gold"></span>
+        </div>
+      </a>
+
+      <a class="ticket live" href="games/flagle/index.html">
+        <span class="ticket-eyebrow">Geography</span>
+        <h2 class="ticket-name">Flagle</h2>
+        <p class="ticket-desc">Guess the country from its flag, zoomed in. Distance &amp; direction hints on every guess.</p>
+        <div class="mini-grid" aria-hidden="true">
+          <span class="mini-cell teal"></span>
+          <span class="mini-cell gray"></span>
+          <span class="mini-cell gray"></span>
+        </div>
+      </a>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Colorfle</h2>
+        <p class="ticket-desc">Guess the hex color code.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Contexto</h2>
+        <p class="ticket-desc">Guess the secret word by semantic closeness.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Conexo</h2>
+        <p class="ticket-desc">Contexto's Spanish-language cousin.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Globle</h2>
+        <p class="ticket-desc">Guess the country, heatmap-style, by distance.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Globle: Capitals</h2>
+        <p class="ticket-desc">Globle, but guessing capital cities.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Nerdle</h2>
+        <p class="ticket-desc">Wordle, but the answer is a math equation.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Letterle</h2>
+        <p class="ticket-desc">Guess the single secret letter. Only 26 possible answers.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Waffle</h2>
+        <p class="ticket-desc">Swap letters in a waffle-shaped grid to solve 6 words at once.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Angle</h2>
+        <p class="ticket-desc">Guess the angle in degrees.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Cutle</h2>
+        <p class="ticket-desc">Try to slice a shape exactly in half.</p>
+      </div>
+
+      <div class="ticket soon" aria-disabled="true">
+        <span class="ticket-eyebrow">Coming soon</span>
+        <h2 class="ticket-name">Toon Tone</h2>
+        <p class="ticket-desc">Guess the cartoon from a single frame.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    Built with plain HTML, CSS &amp; JS — hosted free on GitHub Pages.
+  </footer>
+</div>
+
+</body>
+</html>
