@@ -16,10 +16,14 @@ dle-hub/
     │   ├── index.html    ← the Wordle game page
     │   ├── game.js        ← game logic
     │   └── words.js       ← the list of possible answers
-    └── flagle/
-        ├── index.html    ← the Flagle game page
-        ├── game.js        ← game logic (distance/direction math etc.)
-        └── countries.js   ← country names, codes, and coordinates
+    ├── flagle/
+    │   ├── index.html
+    │   ├── game.js
+    │   └── countries.js
+    └── rule34dle/
+        ├── index.html
+        ├── game.js
+        └── characters.js
 ```
 
 Each new game gets its own folder under `games/`, and gets added as a
@@ -95,10 +99,21 @@ Each new game gets its own folder under `games/`, and gets added as a
 4. Add a new `.ticket.live` card in the hub `index.html` linking to it,
    and remove its `.soon` placeholder card
 
-## A note on Rule34dle
+## Rule34dle
 
-I didn't build this one — it's built around adult content, which isn't
-something I can help create. Everything else in this repo (the hub
-layout, the ticket card pattern, the game-shell/grid/keyboard styles)
-is reusable if you want to build it yourself: duplicate a game folder
-as a starting template and swap in your own content source.
+Higher-or-lower game: two character names, guess which has more posts
+on rule34.xxx. Uses a static snapshot of popular tags (no live API,
+no images — names + counts only). Streak is saved in localStorage.
+
+Files live under `games/rule34dle/`:
+- `characters.js` — name, tag, approximate post count
+- `game.js` — higher/lower logic
+- `index.html`
+
+**Why not live API?** rule34.xxx requires an API key and blocks
+cross-origin browser requests (CORS). A pure GitHub-Pages client
+cannot call it directly. To make counts live you would need a tiny
+server-side proxy that holds the key and forwards tag queries.
+
+You can refresh the numbers in `characters.js` any time by looking
+up tags on the site or via the API from a script on your machine.

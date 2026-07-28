@@ -427,3 +427,124 @@ button:focus-visible,
   color: var(--accent);
   font-weight: 700;
 }
+
+
+/* ============================================================
+   RULE34DLE
+   ============================================================ */
+
+.r34-shell {
+  max-width: 640px;
+}
+
+.r34-stats {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+.r34-stats strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.r34-pair {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: stretch;
+  margin: 8px 0 18px;
+}
+
+.r34-vs {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.r34-card {
+  background: var(--bg-panel);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  padding: 28px 16px;
+  cursor: pointer;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 140px;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  font: inherit;
+}
+.r34-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  background: var(--bg-panel-hover);
+}
+.r34-card:disabled {
+  cursor: default;
+}
+.r34-card.winner {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-panel));
+}
+.r34-card.loser {
+  border-color: var(--danger);
+  opacity: 0.75;
+}
+
+.r34-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.r34-count {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.r34-count.hidden {
+  visibility: hidden;
+}
+
+.r34-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.r34-note {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+  max-width: 42ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 520px) {
+  .r34-pair {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+  .r34-vs {
+    padding: 4px 0;
+  }
+  .r34-name { font-size: 18px; }
+}
