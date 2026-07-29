@@ -15,10 +15,12 @@
 <div class="game-shell">
   <div class="game-header">
     <h1>Flagle</h1>
-    <p>Guess the country from a zoomed-in flag. It zooms out each guess.</p>
+    <p id="mode-desc">Guess the country from a zoomed-in flag. It zooms out each guess.</p>
   </div>
 
-  <div class="flag-viewport">
+  <div class="mode-select" id="mode-select" role="tablist" aria-label="Flagle mode"></div>
+
+  <div class="flag-viewport" id="flag-viewport">
     <img id="flag-img" src="" alt="Mystery flag, zoomed in">
   </div>
   <div id="attempts-left" class="attempts-left"></div>

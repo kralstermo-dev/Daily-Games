@@ -7,6 +7,15 @@ const MAX_GUESSES = 6;
 // The last level MUST be 1 (full flag, dead-center) — see setZoomStep() below for why.
 const ZOOM_LEVELS = [4, 3, 2.4, 2, 1.6, 1];
 
+// Each mode: how it's labeled in the tab, and its subtitle under the title.
+// To add a future mode, add an entry here and branch on state.mode in
+// renderGuess() / updateFlagVisibility() below.
+const MODES = [
+  { id: "zoom", label: "Zoomed Flag", desc: "Guess the country from a zoomed-in flag. It zooms out each guess." },
+  { id: "colormatch", label: "Color Match", desc: "The flag stays hidden. Each guess only shows you which colors it shares with the answer." },
+];
+const MODE_STORAGE_KEY = "flagle-mode";
+
 function getTodaysCountry() {
   const start = new Date(2024, 0, 1);
   const today = new Date();
@@ -174,9 +183,11 @@ const state = {
   answer: getTodaysCountry(),
   guesses: [],
   gameOver: false,
+  mode: localStorage.getItem(MODE_STORAGE_KEY) || "zoom",
 };
 
 const flagImg = document.getElementById("flag-img");
+const flagViewport = document.getElementById("flag-viewport");
 const guessInput = document.getElementById("guess-input");
 const guessForm = document.getElementById("guess-form");
 const guessList = document.getElementById("guess-list");
@@ -184,6 +195,40 @@ const statusEl = document.getElementById("status");
 const attemptsEl = document.getElementById("attempts-left");
 const datalist = document.getElementById("country-options");
 const playAgainBtn = document.getElementById("play-again");
+const modeSelectEl = document.getElementById("mode-select");
+const modeDescEl = document.getElementById("mode-desc");
+
+function buildModeSelector() {
+  modeSelectEl.innerHTML = MODES.map(m =>
+    `<button class="mode-btn${m.id === state.mode ? " active" : ""}" data-mode="${m.id}" role="tab" aria-selected="${m.id === state.mode}">${m.label}</button>`
+  ).join("");
+
+  modeSelectEl.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.mode === state.mode) return;
+      state.mode = btn.dataset.mode;
+      localStorage.setItem(MODE_STORAGE_KEY, state.mode);
+      resetRound(); // switching modes starts a fresh round in the new mode
+    });
+  });
+}
+
+function applyModeUI() {
+  modeSelectEl.querySelectorAll(".mode-btn").forEach(btn => {
+    const active = btn.dataset.mode === state.mode;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-selected", active);
+  });
+  modeDescEl.textContent = MODES.find(m => m.id === state.mode).desc;
+  updateFlagVisibility();
+}
+
+// In Color Match mode the flag stays fully hidden until the round ends —
+// the only feedback comes from the color-match block on each guess.
+function updateFlagVisibility() {
+  const hide = state.mode === "colormatch" && !state.gameOver;
+  flagViewport.classList.toggle("mystery", hide);
+}
 
 function setup() {
   flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`;
@@ -199,6 +244,12 @@ function setup() {
   datalist.innerHTML = COUNTRIES
     .map(c => `<option value="${c.name}">`)
     .join("");
+
+  if (!modeSelectEl.dataset.built) {
+    buildModeSelector();
+    modeSelectEl.dataset.built = "true";
+  }
+  applyModeUI();
 }
 setup();
 
@@ -244,6 +295,18 @@ function renderGuess(country, isCorrect) {
     return;
   }
 
+  if (state.mode === "colormatch") {
+    row.innerHTML = `
+      <img class="flagle-thumb" src="https://flagcdn.com/w80/${country.code}.png" alt="">
+      <span class="flagle-name">${country.name}</span>
+      <div class="flagle-colormatch loading">Comparing colors…</div>
+    `;
+    guessList.prepend(row);
+    attachColorMatch(row, country);
+    return;
+  }
+
+  // zoom mode
   const km = distanceKm(country, state.answer);
   const deg = bearingDeg(country, state.answer);
   const pct = proximityPct(km);
@@ -252,10 +315,8 @@ function renderGuess(country, isCorrect) {
     <span class="flagle-name">${country.name}</span>
     <span class="flagle-arrow" title="direction">${arrowSvg(deg)}</span>
     <span class="flagle-pct" style="--pct:${pct}%">${pct}% match</span>
-    <div class="flagle-colormatch loading">Comparing colors…</div>
   `;
   guessList.prepend(row);
-  attachColorMatch(row, country);
 }
 
 guessForm.addEventListener("submit", (e) => {
@@ -295,12 +356,15 @@ guessForm.addEventListener("submit", (e) => {
 function endGame(won) {
   state.gameOver = true;
   setZoomStep(1);
+  updateFlagVisibility(); // reveals the flag even in Color Match mode, now that the round is over
   guessInput.disabled = true;
   playAgainBtn.classList.add("show");
   showStatus(won ? "Solved! 🎉" : `The flag was ${state.answer.name}`);
 }
 
-playAgainBtn.addEventListener("click", () => {
+// Starts a fresh round with a random country, in whichever mode is
+// currently selected. Used by both "play again" and switching modes.
+function resetRound() {
   state.answer = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
   state.guesses = [];
   state.gameOver = false;
@@ -309,4 +373,6 @@ playAgainBtn.addEventListener("click", () => {
   playAgainBtn.classList.remove("show");
   showStatus("");
   setup();
-});
+}
+
+playAgainBtn.addEventListener("click", resetRound);

@@ -340,6 +340,46 @@ button:focus-visible,
   background: var(--bg-panel);
 }
 
+.mode-select {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.mode-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-dim);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mode-btn:hover { color: var(--ink); }
+.mode-btn.active { background: var(--accent); color: #14171c; }
+
+.flag-viewport.mystery img { opacity: 0; }
+.flag-viewport.mystery::after {
+  content: "?";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 600;
+  color: var(--line);
+}
+
 .flag-viewport img {
   position: absolute;
   top: var(--oy, 50%);
@@ -396,7 +436,7 @@ button:focus-visible,
 
 .flagle-row {
   display: grid;
-  grid-template-columns: 40px 1fr auto auto auto;
+  grid-template-columns: 40px 1fr auto auto;
   align-items: center;
   gap: 10px;
   background: var(--bg-panel);
@@ -414,7 +454,6 @@ button:focus-visible,
 }
 
 .flagle-name { font-weight: 600; }
-.flagle-dist { font-family: var(--font-mono); color: var(--ink-dim); }
 .flagle-arrow { color: var(--accent-2); display: flex; }
 .flagle-pct {
   font-family: var(--font-mono);
@@ -426,6 +465,32 @@ button:focus-visible,
   font-family: var(--font-mono);
   color: var(--accent);
   font-weight: 700;
+}
+
+.flagle-colormatch {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.flagle-colormatch.loading { font-style: italic; }
+
+.colormatch-img {
+  width: 40px;
+  height: 27px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+}
+
+.colormatch-label {
+  color: var(--accent-2);
 }
 
 
