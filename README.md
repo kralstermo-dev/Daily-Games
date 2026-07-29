@@ -16,55 +16,11 @@ dle-hub/
     │   ├── index.html    ← the Wordle game page
     │   ├── game.js        ← game logic
     │   └── words.js       ← the list of possible answers
-    ├── flagle/
-    │   ├── index.html
-    │   ├── game.js
-    │   └── countries.js
-    └── rule34dle/
-        ├── index.html
-        ├── game.js
-        └── characters.js
+    └── flagle/
+        ├── index.html    ← the Flagle game page
+        ├── game.js        ← game logic (distance/direction math etc.)
+        └── countries.js   ← country names, codes, and coordinates
 ```
-
-Each new game gets its own folder under `games/`, and gets added as a
-"ticket" card to `index.html`.
-
-## Put this on GitHub Pages (step by step)
-
-1. **Create a GitHub account** if you don't have one: https://github.com/join
-
-2. **Create a new repository**
-   - Click the `+` in the top right of GitHub → "New repository"
-   - Name it anything, e.g. `dle-games`
-   - Set it to **Public** (required for free GitHub Pages)
-   - Don't add a README/gitignore (we already have files) — just click "Create repository"
-
-3. **Upload these files**
-   - On your new repo's page, click "uploading an existing file"
-   - Drag in the *contents* of this `dle-hub` folder (index.html, styles/, games/ — not the outer folder itself)
-   - Commit the changes
-
-   *(If you're comfortable with git/terminal, this is faster:)*
-   ```bash
-   cd dle-hub
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/dle-games.git
-   git push -u origin main
-   ```
-
-4. **Turn on GitHub Pages**
-   - In your repo, go to **Settings → Pages**
-   - Under "Build and deployment" → "Source", choose **Deploy from a branch**
-   - Branch: `main`, folder: `/ (root)` → Save
-
-5. **Wait ~1 minute**, then your site is live at:
-   ```
-   https://YOUR_USERNAME.github.io/dle-games/
-   ```
-   (GitHub shows you this exact URL at the top of the Pages settings once it's live.)
 
 ## How the Wordle game works (so you can extend it)
 
@@ -90,15 +46,6 @@ Each new game gets its own folder under `games/`, and gets added as a
   cropped by a fixed-size container, then scaled back down a notch with
   each guess.
 
-## Adding your next game
-
-1. Duplicate `games/wordle/` (or `games/flagle/`) as a new folder
-2. Swap out the game logic in `game.js` for that game's rules
-3. Reuse `styles/main.css` — the `.game-shell`, `.cell`, `.key` classes
-   etc. are written to be generic enough for most of these games
-4. Add a new `.ticket.live` card in the hub `index.html` linking to it,
-   and remove its `.soon` placeholder card
-
 ## Rule34dle
 
 Higher-or-lower game: two character names, guess which has more posts
@@ -117,3 +64,13 @@ server-side proxy that holds the key and forwards tag queries.
 
 You can refresh the numbers in `characters.js` any time by looking
 up tags on the site or via the API from a script on your machine.
+
+## Adding your next game
+
+1. Duplicate `games/wordle/` (or `games/flagle/`) as a new folder
+2. Swap out the game logic in `game.js` for that game's rules
+3. Reuse `styles/main.css` — the `.game-shell`, `.cell`, `.key` classes
+   etc. are written to be generic enough for most of these games
+4. Add a new `.ticket.live` card in the hub `index.html` linking to it,
+   and remove its `.soon` placeholder card
+
