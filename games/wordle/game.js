@@ -1,14 +1,7 @@
-// ============================================================
-// WORDLE CLONE — game logic
-// Plain JS, no build step needed — this file just runs in the browser.
-// ============================================================
-
 const WORD_LENGTH = 5;
 const MAX_GUESSES = 6;
 
-// Pick today's word deterministically, so everyone playing today
-// gets the same word (like the real Wordle). We turn today's date
-// into a number, then use it to index into the word list.
+// Picking todays word by turing date into number string
 function getTodaysWord() {
   const start = new Date(2024, 0, 1); // arbitrary epoch for day-counting
   const today = new Date();
@@ -28,7 +21,7 @@ const gridEl = document.getElementById("grid");
 const statusEl = document.getElementById("status");
 const playAgainBtn = document.getElementById("play-again");
 
-// ---------- build the grid of empty cells ----------
+// Geusses
 function buildGrid() {
   gridEl.innerHTML = "";
   for (let r = 0; r < MAX_GUESSES; r++) {
@@ -45,7 +38,7 @@ function buildGrid() {
 }
 buildGrid();
 
-// ---------- on-screen keyboard ----------
+// Showing keyboard
 const KEY_ROWS = [
   ["q","w","e","r","t","y","u","i","o","p"],
   ["a","s","d","f","g","h","j","k","l"],
@@ -71,7 +64,7 @@ function buildKeyboard() {
 }
 buildKeyboard();
 
-// ---------- input handling ----------
+//input handling
 function handleKey(key) {
   if (state.gameOver) return;
 
@@ -148,8 +141,8 @@ function submitGuess() {
   }
 }
 
-// Standard Wordle scoring: correct > present > absent,
-// handling repeated letters correctly.
+// Wordle scoring: correct > present > absent
+// handling repeated letters correctly
 function scoreGuess(guess, answer) {
   const result = Array(WORD_LENGTH).fill("absent");
   const answerLetters = answer.split("");
@@ -162,7 +155,7 @@ function scoreGuess(guess, answer) {
       used[i] = true;
     }
   }
-  // second pass: correct letters in wrong spot
+  // correct letters in wrong spot
   for (let i = 0; i < WORD_LENGTH; i++) {
     if (result[i] === "correct") continue;
     const idx = answerLetters.findIndex((l, j) => l === guess[i] && !used[j]);
@@ -188,7 +181,7 @@ function revealRow(row, result, guess) {
   }
 }
 
-// Keep the best-known status for each key (correct beats present beats absent)
+// best first
 const keyStatus = {};
 function updateKeyboardKey(letter, status) {
   const rank = { correct: 3, present: 2, absent: 1 };
@@ -206,7 +199,7 @@ function endGame() {
   playAgainBtn.classList.add("show");
 }
 
-// ---------- physical keyboard support ----------
+// physical keyboard support
 document.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
   if (key === "backspace") handleKey("back");
@@ -214,7 +207,7 @@ document.addEventListener("keydown", (e) => {
   else if (/^[a-z]$/.test(key)) handleKey(key);
 });
 
-// ---------- play again (practice mode: picks a random word, not today's) ----------
+//  play again (practice mode picks a random word, not today's)
 playAgainBtn.addEventListener("click", () => {
   state.answer = ANSWER_WORDS[Math.floor(Math.random() * ANSWER_WORDS.length)];
   state.row = 0;
