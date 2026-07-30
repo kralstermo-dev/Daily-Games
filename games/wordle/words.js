@@ -1,7 +1,4 @@
-// A small curated list of common 5-letter answers.
-// The game picks one deterministically based on today's date,
-// so everyone gets the same word on the same day (like the real Wordle).
-// Add more words any time — just keep them lowercase, 5 letters.
+// Words must be lowercase, 5 letters.
 const ANSWER_WORDS = [
   "about","above","actor","adapt","alarm","alert","allow","alone","amber","angle",
   "apple","apply","arise","aside","await","award","aware","badge","baker","basic",
@@ -24,4 +21,34 @@ const ANSWER_WORDS = [
   "grove","guard","guess","guide","habit","happy","harsh","heart","heavy","hobby",
   "honey","honor","hotel","house","human","humor","ideal","image","index","inner",
   "input","issue","ivory","jelly","joint","judge","juice","known","label","labor",
+  "laser","later","laugh","layer","learn","lease","least","leave","legal","lemon",
+  "level","lever","light","limit","linen","logic","loose","lover","lower","loyal",
+  "lucky","lunar","lunch","magic","major","maker","march","match","mayor","meant",
+  "medal","media","metal","meter","might","minor","model","money","month","motor",
+  "mount","mouse","mouth","movie","music","naval","needs","nerve","never","newly",
+  "night","noble","noise","north","novel","nurse","ocean","offer","often","olive",
+  "omega","onset","opera","option","orbit","order","organ","other","outer","paint",
+  "panel","paper","party","peace","pearl","phase","phone","photo","piano","piece",
+  "pilot","pitch","place","plain","plane","plant","plate","point","polar","power",
+  "press","price","pride","prime","print","prior","prize","proof","proud","prove",
+  "queen","quick","quiet","quite","radar","radio","raise","range","rapid","ratio",
+  "reach","react","ready","realm","rebel","refer","relax","renew","reply","reset",
+  "rider","ridge","right","rival","river","robot","rough","round","route","royal",
+  "rural","scale","scene","scope","score","sense","serve","seven","shade","shake",
+  "shall","shape","share","sharp","sheet","shelf","shell","shift","shine","shirt",
+  "shock","shoot","short","shout","sight","signal","simple","since","skill","sleep",
+  "slice","slide","smart","smile","smoke","solid","solve","sorry","sound","south",
+  "space","spare","speak","speed","spend","spill","spin","spite","split","sport",
+  "spray","squad","stage","stake","stand","stare","start","state","steam","steel",
+  "steep","steer","stick","still","stock","stone","store","storm","story","strip",
+  "stuck","study","stuff","style","sugar","suite","super","sweet","table","taste",
+  "teach","thank","their","theme","there","these","thick","thing","think","third",
+  "those","three","throw","tiger","tight","timer","title","today","topic","total",
+  "touch","tough","tower","track","trade","train","trend","trial","tribe","trick",
+  "trust","truth","twice","under","union","unique","unit","unity","until","upper",
+  "upset","urban","usage","usual","valid","value","video","virus","visit","vital",
+  "voice","voter","waste","watch","water","wheel","where","which","while","white",
+  "whole","whose","woman","world","worry","worth","would","wound","write","wrong",
+  "xenon","xeric","xylem","yacht","yearn","yeast","yield","young","youth","zebra",
+  "zesty","zilch","zonal"
 ];
