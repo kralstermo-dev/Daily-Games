@@ -13,12 +13,22 @@
 </div>
 
 <div class="game-shell">
-  <div class="game-header">
+  <div class="game-header game-header-row">
     <h1>Flagle</h1>
-    <p id="mode-desc">Guess the country from a zoomed-in flag. It zooms out each guess.</p>
+    <button id="settings-btn" class="icon-btn" aria-haspopup="true" aria-expanded="false" title="Settings">⚙</button>
+  </div>
+  <p id="mode-desc">Guess the country from a zoomed-in flag. It zooms out each guess.</p>
+
+  <div id="settings-panel" class="settings-panel hidden">
+    <label class="settings-row">
+      <input type="checkbox" id="show-flags-toggle" checked>
+      Show flags in the country list
+    </label>
   </div>
 
   <div class="mode-select" id="mode-select" role="tablist" aria-label="Flagle mode"></div>
+
+  <div id="win-badge" class="win-badge hidden">Nice one!</div>
 
   <div class="flag-viewport" id="flag-viewport">
     <img id="flag-img" src="" alt="Mystery flag, zoomed in">
@@ -27,15 +37,16 @@
 
   <div id="status" class="status-msg" role="status" aria-live="polite"></div>
 
-  <form id="guess-form" class="guess-form">
-    <input
-      id="guess-input"
-      type="text"
-      list="country-options"
-      placeholder="Type a country name…"
-      autocomplete="off"
-      required>
-    <datalist id="country-options"></datalist>
+  <form id="guess-form" class="guess-form" autocomplete="off">
+    <div class="autocomplete">
+      <input
+        id="guess-input"
+        type="text"
+        placeholder="Choose a country"
+        autocomplete="off"
+        required>
+      <div id="autocomplete-list" class="autocomplete-list hidden"></div>
+    </div>
     <button type="submit">Guess</button>
   </form>
 

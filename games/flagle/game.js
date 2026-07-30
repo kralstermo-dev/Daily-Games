@@ -1,5 +1,7 @@
 // ============================================================
-// FLAGLE — guess the country from a zoomed-in flag
+// FLAGLE — guess the country from a flag
+// Two modes: Zoomed Flag (progressive zoom reveal) and
+// Color Match (pixel-position color comparison against the answer).
 // ============================================================
 
 const MAX_GUESSES = 6;
@@ -7,14 +9,21 @@ const MAX_GUESSES = 6;
 // The last level MUST be 1 (full flag, dead-center) — see setZoomStep() below for why.
 const ZOOM_LEVELS = [4, 3, 2.4, 2, 1.6, 1];
 
+// How close two pixels' RGB values need to be (squared Euclidean distance)
+// to count as a "match" in Color Match mode. Tune this if matches feel too
+// strict or too loose.
+const PIXEL_THRESHOLD = 60;
+const PIXEL_THRESHOLD_SQ = PIXEL_THRESHOLD * PIXEL_THRESHOLD;
+
 // Each mode: how it's labeled in the tab, and its subtitle under the title.
 // To add a future mode, add an entry here and branch on state.mode in
-// renderGuess() / updateFlagVisibility() below.
+// renderGuess() / applyModeUI() below.
 const MODES = [
   { id: "zoom", label: "Zoomed Flag", desc: "Guess the country from a zoomed-in flag. It zooms out each guess." },
-  { id: "colormatch", label: "Color Match", desc: "The flag stays hidden. Each guess only shows you which colors it shares with the answer." },
+  { id: "colormatch", label: "Color Match", desc: "The flag starts blank. Each guess shows how much of its color lines up with the answer, pixel for pixel." },
 ];
 const MODE_STORAGE_KEY = "flagle-mode";
+const SHOW_FLAGS_KEY = "flagle-show-flags";
 
 function getTodaysCountry() {
   const start = new Date(2024, 0, 1);
@@ -24,7 +33,6 @@ function getTodaysCountry() {
   return COUNTRIES[dayIndex % COUNTRIES.length];
 }
 
-// Simple deterministic hash → used to pick a consistent "crop point" per country
 function hashString(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
@@ -36,7 +44,6 @@ function hashString(str) {
 function toRad(deg) { return (deg * Math.PI) / 180; }
 function toDeg(rad) { return (rad * 180) / Math.PI; }
 
-// Haversine distance in km
 function distanceKm(a, b) {
   const R = 6371;
   const dLat = toRad(b.lat - a.lat);
@@ -47,48 +54,12 @@ function distanceKm(a, b) {
   return Math.round(R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h)));
 }
 
-// Initial bearing in degrees (0 = north, 90 = east, etc.)
 function bearingDeg(a, b) {
   const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
   const dLng = toRad(b.lng - a.lng);
   const y = Math.sin(dLng) * Math.cos(lat2);
   const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
-}
-
-function proximityPct(km) {
-  const HALF_EARTH = 20015; // km, half the circumference — max possible distance
-  return Math.max(0, Math.round(100 - (km / HALF_EARTH) * 100));
-}
-
-// ============================================================
-// COLOR MATCH — finds colors the guessed flag and the answer's
-// flag have in common, then re-renders the guess with only the
-// shared-color regions in full color (the rest faded to gray).
-// Colors are found by sampling actual pixels, not a hand-typed
-// list, so it works for every country automatically.
-// ============================================================
-
-const COLOR_PALETTE = [
-  { name: "red",        rgb: [206, 17, 38] },
-  { name: "white",      rgb: [255, 255, 255] },
-  { name: "black",      rgb: [0, 0, 0] },
-  { name: "blue",       rgb: [0, 57, 166] },
-  { name: "light blue", rgb: [0, 158, 224] },
-  { name: "green",      rgb: [0, 122, 51] },
-  { name: "yellow",     rgb: [255, 204, 0] },
-  { name: "orange",     rgb: [255, 103, 31] },
-  { name: "maroon",     rgb: [126, 17, 40] },
-  { name: "purple",     rgb: [102, 45, 145] },
-];
-
-function nearestColorName(r, g, b) {
-  let best = null, bestDist = Infinity;
-  for (const c of COLOR_PALETTE) {
-    const d = (r - c.rgb[0]) ** 2 + (g - c.rgb[1]) ** 2 + (b - c.rgb[2]) ** 2;
-    if (d < bestDist) { bestDist = d; best = c.name; }
-  }
-  return best;
 }
 
 function loadImage(url) {
@@ -101,83 +72,63 @@ function loadImage(url) {
   });
 }
 
-// Downsamples an already-loaded flag image and returns the set of color
-// names that cover at least ~6% of it (filters out antialiasing noise).
-function dominantColors(img) {
-  const w = 48, h = 32;
-  const canvas = document.createElement("canvas");
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0, w, h);
-  const { data } = ctx.getImageData(0, 0, w, h);
+// ============================================================
+// COLOR MATCH — pixel-position comparison
+// Both flags are stretched to the same w×h grid, then compared
+// pixel by pixel. Matching pixels keep the guess's own color;
+// everything else goes transparent, so only the overlapping
+// shapes/colors of the guessed flag show through.
+// ============================================================
 
-  const counts = {};
-  let total = 0;
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue; // skip transparent
-    const name = nearestColorName(data[i], data[i + 1], data[i + 2]);
-    counts[name] = (counts[name] || 0) + 1;
-    total++;
-  }
-
-  const dominant = new Set();
-  for (const [name, count] of Object.entries(counts)) {
-    if (count / total >= 0.06) dominant.add(name);
-  }
-  return dominant;
+function stretchDraw(ctx, img, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h); // stretch to fill — ignores aspect ratio so grids line up
 }
 
-// Re-renders the guessed flag: pixels in a shared color stay full-color,
-// everything else fades to gray. Returns a data URL.
-function renderColorMatch(img, sharedNames) {
-  const w = 80, h = 53;
-  const canvas = document.createElement("canvas");
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(img, 0, 0, w, h);
-  const imageData = ctx.getImageData(0, 0, w, h);
-  const { data } = imageData;
+function pixelMatchRender(guessImg, answerImg, w, h) {
+  const gCanvas = document.createElement("canvas");
+  gCanvas.width = w; gCanvas.height = h;
+  const gCtx = gCanvas.getContext("2d");
+  stretchDraw(gCtx, guessImg, w, h);
+  const gData = gCtx.getImageData(0, 0, w, h).data;
 
-  for (let i = 0; i < data.length; i += 4) {
-    if (data[i + 3] < 128) continue;
-    const name = nearestColorName(data[i], data[i + 1], data[i + 2]);
-    if (!sharedNames.has(name)) {
-      const gray = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
-      data[i] = data[i + 1] = data[i + 2] = gray * 0.55 + 255 * 0.15; // fade toward light gray
+  const aCanvas = document.createElement("canvas");
+  aCanvas.width = w; aCanvas.height = h;
+  const aCtx = aCanvas.getContext("2d");
+  stretchDraw(aCtx, answerImg, w, h);
+  const aData = aCtx.getImageData(0, 0, w, h).data;
+
+  const outCanvas = document.createElement("canvas");
+  outCanvas.width = w; outCanvas.height = h;
+  const outCtx = outCanvas.getContext("2d");
+  const outImageData = outCtx.createImageData(w, h);
+  const outData = outImageData.data;
+
+  let matched = 0;
+  const total = w * h;
+
+  for (let i = 0; i < gData.length; i += 4) {
+    const dr = gData[i] - aData[i];
+    const dg = gData[i + 1] - aData[i + 1];
+    const db = gData[i + 2] - aData[i + 2];
+    const distSq = dr * dr + dg * dg + db * db;
+    if (distSq <= PIXEL_THRESHOLD_SQ) {
+      outData[i] = gData[i];
+      outData[i + 1] = gData[i + 1];
+      outData[i + 2] = gData[i + 2];
+      outData[i + 3] = 255;
+      matched++;
+    } else {
+      outData[i + 3] = 0; // transparent — page background shows through
     }
   }
-  ctx.putImageData(imageData, 0, 0);
-  return canvas.toDataURL();
+  outCtx.putImageData(outImageData, 0, 0);
+  return { pct: (matched / total) * 100, canvas: outCanvas };
 }
 
-// Fills in a guess row's color-match block, asynchronously. Fails silently
-// (just removes the block) if the flag CDN ever blocks canvas pixel reads —
-// the distance/direction hints already work fine without it.
-async function attachColorMatch(row, country) {
-  const holder = row.querySelector(".flagle-colormatch");
-  try {
-    const [answerImg, guessImg] = await Promise.all([
-      loadImage(`https://flagcdn.com/w160/${state.answer.code}.png`),
-      loadImage(`https://flagcdn.com/w160/${country.code}.png`),
-    ]);
-    const answerColors = dominantColors(answerImg);
-    const guessColors = dominantColors(guessImg);
-    const shared = [...guessColors].filter(c => answerColors.has(c));
-
-    if (shared.length === 0) {
-      holder.innerHTML = `<span class="colormatch-label">No shared colors</span>`;
-      return;
-    }
-    const maskedSrc = renderColorMatch(guessImg, new Set(shared));
-    holder.innerHTML = `
-      <img class="colormatch-img" src="${maskedSrc}" alt="${country.name} flag, shared-color regions highlighted">
-      <span class="colormatch-label">Shares: ${shared.join(", ")}</span>
-    `;
-  } catch (err) {
-    if (holder) holder.remove();
-    console.warn("Color match unavailable:", err);
-  }
-}
+// ============================================================
+// STATE + DOM
+// ============================================================
 
 const state = {
   answer: getTodaysCountry(),
@@ -193,10 +144,21 @@ const guessForm = document.getElementById("guess-form");
 const guessList = document.getElementById("guess-list");
 const statusEl = document.getElementById("status");
 const attemptsEl = document.getElementById("attempts-left");
-const datalist = document.getElementById("country-options");
 const playAgainBtn = document.getElementById("play-again");
 const modeSelectEl = document.getElementById("mode-select");
 const modeDescEl = document.getElementById("mode-desc");
+const winBadgeEl = document.getElementById("win-badge");
+const settingsBtn = document.getElementById("settings-btn");
+const settingsPanel = document.getElementById("settings-panel");
+const showFlagsToggle = document.getElementById("show-flags-toggle");
+const autocompleteList = document.getElementById("autocomplete-list");
+
+let showFlagsInList = localStorage.getItem(SHOW_FLAGS_KEY) !== "false"; // default true
+showFlagsToggle.checked = showFlagsInList;
+
+// ============================================================
+// MODE SELECTOR
+// ============================================================
 
 function buildModeSelector() {
   modeSelectEl.innerHTML = MODES.map(m =>
@@ -208,7 +170,7 @@ function buildModeSelector() {
       if (btn.dataset.mode === state.mode) return;
       state.mode = btn.dataset.mode;
       localStorage.setItem(MODE_STORAGE_KEY, state.mode);
-      resetRound(); // switching modes starts a fresh round in the new mode
+      resetRound();
     });
   });
 }
@@ -220,30 +182,30 @@ function applyModeUI() {
     btn.setAttribute("aria-selected", active);
   });
   modeDescEl.textContent = MODES.find(m => m.id === state.mode).desc;
-  updateFlagVisibility();
+  attemptsEl.textContent = `${MAX_GUESSES - state.guesses.length} guesses left`;
+
+  if (state.mode === "colormatch") {
+    flagViewport.classList.add("mystery"); // blank until the first guess reveals something
+  } else {
+    flagViewport.classList.remove("mystery");
+    flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`;
+    updateZoom();
+  }
 }
 
-// In Color Match mode the flag stays fully hidden until the round ends —
-// the only feedback comes from the color-match block on each guess.
-function updateFlagVisibility() {
-  const hide = state.mode === "colormatch" && !state.gameOver;
-  flagViewport.classList.toggle("mystery", hide);
-}
+// ============================================================
+// SETUP / ROUND LIFECYCLE
+// ============================================================
 
 function setup() {
-  flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`;
-  flagImg.crossOrigin = "anonymous"; // needed so we can read pixels later for the color-match feature
-  const h = hashString(state.answer.code);
-  // Keep the crop point closer to center (35–65%) than before — this leaves enough
-  // "overscan" at every non-final zoom level that the flag always fully covers its
-  // frame, no matter which corner the crop point lands in.
-  state.anchorX = 35 + (h % 31);         // 35–65%
-  state.anchorY = 35 + ((h >> 8) % 31);  // 35–65%
-  updateZoom();
+  flagImg.crossOrigin = "anonymous";
+  state.answerImgPromise = loadImage(`https://flagcdn.com/w320/${state.answer.code}.png`);
 
-  datalist.innerHTML = COUNTRIES
-    .map(c => `<option value="${c.name}">`)
-    .join("");
+  const h = hashString(state.answer.code);
+  // Keep the crop point closer to center (35–65%) — leaves enough "overscan" at
+  // every non-final zoom level that the flag always fully covers its frame.
+  state.anchorX = 35 + (h % 31);
+  state.anchorY = 35 + ((h >> 8) % 31);
 
   if (!modeSelectEl.dataset.built) {
     buildModeSelector();
@@ -253,10 +215,29 @@ function setup() {
 }
 setup();
 
+function resetRound() {
+  state.answer = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+  state.guesses = [];
+  state.gameOver = false;
+  guessInput.disabled = false;
+  guessInput.value = "";
+  guessList.innerHTML = "";
+  autocompleteList.classList.add("hidden");
+  playAgainBtn.classList.remove("show");
+  winBadgeEl.classList.add("hidden");
+  showStatus("");
+  setup();
+}
+playAgainBtn.addEventListener("click", resetRound);
+
+// ============================================================
+// ZOOM MODE
+// ============================================================
+
 function updateZoom() {
+  if (state.mode !== "zoom") return;
   const level = ZOOM_LEVELS[Math.min(state.guesses.length, ZOOM_LEVELS.length - 1)];
   setZoomStep(level);
-  attemptsEl.textContent = `${MAX_GUESSES - state.guesses.length} guesses left`;
 }
 
 // A zoom of 1 means the image is exactly the size of its frame — at that size
@@ -270,20 +251,73 @@ function setZoomStep(level) {
   flagImg.style.setProperty("--oy", (isFullSize ? 50 : state.anchorY) + "%");
 }
 
-function showStatus(msg, isError = false) {
-  statusEl.textContent = msg;
-  statusEl.classList.toggle("error", isError);
-}
-
 function arrowSvg(deg) {
   return `<svg viewBox="0 0 24 24" width="20" height="20" style="transform:rotate(${deg}deg)">
     <path d="M12 2 L19 21 L12 17 L5 21 Z" fill="currentColor"/>
   </svg>`;
 }
 
+// ============================================================
+// COLOR MATCH MODE — per-guess rendering
+// ============================================================
+
+async function fillColorMatchRow(row, country, isCorrect) {
+  const pctEl = row.querySelector(".cm-pct");
+  const iconEl = row.querySelector(".cm-icon");
+
+  if (isCorrect) {
+    pctEl.textContent = "100.0%";
+    iconEl.src = `https://flagcdn.com/w80/${country.code}.png`;
+    return;
+  }
+
+  try {
+    const [answerImg, guessImg] = await Promise.all([
+      state.answerImgPromise,
+      loadImage(`https://flagcdn.com/w320/${country.code}.png`),
+    ]);
+    const { pct, canvas } = pixelMatchRender(guessImg, answerImg, 280, 187);
+    const dataUrl = canvas.toDataURL();
+
+    pctEl.textContent = `${pct.toFixed(1)}%`;
+    iconEl.src = dataUrl;
+
+    // Update the main viewport to this guess's masked reveal — but only if
+    // the round hasn't already ended (avoids clobbering the final reveal if
+    // this resolves after a correct/final guess already wrapped things up).
+    if (!state.gameOver) {
+      flagImg.src = dataUrl;
+      flagImg.style.setProperty("--zoom", 1);
+      flagImg.style.setProperty("--ox", "50%");
+      flagImg.style.setProperty("--oy", "50%");
+      flagViewport.classList.remove("mystery");
+    }
+  } catch (err) {
+    pctEl.textContent = "—";
+    console.warn("Color match unavailable:", err);
+  }
+}
+
+// ============================================================
+// GUESS ROWS
+// ============================================================
+
 function renderGuess(country, isCorrect) {
   const row = document.createElement("div");
   row.className = "flagle-row";
+
+  if (state.mode === "colormatch") {
+    row.classList.add("cm-mode");
+    if (isCorrect) row.classList.add("correct");
+    row.innerHTML = `
+      <span class="flagle-name">${country.name}</span>
+      <span class="cm-pct">…</span>
+      <img class="cm-icon" src="" alt="${country.name} flag, matched regions">
+    `;
+    guessList.prepend(row);
+    fillColorMatchRow(row, country, isCorrect);
+    return;
+  }
 
   if (isCorrect) {
     row.innerHTML = `
@@ -295,28 +329,25 @@ function renderGuess(country, isCorrect) {
     return;
   }
 
-  if (state.mode === "colormatch") {
-    row.innerHTML = `
-      <img class="flagle-thumb" src="https://flagcdn.com/w80/${country.code}.png" alt="">
-      <span class="flagle-name">${country.name}</span>
-      <div class="flagle-colormatch loading">Comparing colors…</div>
-    `;
-    guessList.prepend(row);
-    attachColorMatch(row, country);
-    return;
-  }
-
-  // zoom mode
+  // zoom mode, wrong guess
   const km = distanceKm(country, state.answer);
   const deg = bearingDeg(country, state.answer);
-  const pct = proximityPct(km);
   row.innerHTML = `
     <img class="flagle-thumb" src="https://flagcdn.com/w80/${country.code}.png" alt="">
     <span class="flagle-name">${country.name}</span>
     <span class="flagle-arrow" title="direction">${arrowSvg(deg)}</span>
-    <span class="flagle-pct" style="--pct:${pct}%">${pct}% match</span>
+    <span class="flagle-dist">${km.toLocaleString()} km</span>
   `;
   guessList.prepend(row);
+}
+
+// ============================================================
+// GUESS SUBMISSION
+// ============================================================
+
+function showStatus(msg, isError = false) {
+  statusEl.textContent = msg;
+  statusEl.classList.toggle("error", isError);
 }
 
 guessForm.addEventListener("submit", (e) => {
@@ -338,14 +369,17 @@ guessForm.addEventListener("submit", (e) => {
   showStatus("");
   state.guesses.push(country);
   guessInput.value = "";
+  autocompleteList.classList.add("hidden");
 
-  if (country.code === state.answer.code) {
-    renderGuess(country, true);
+  const isCorrect = country.code === state.answer.code;
+  renderGuess(country, isCorrect);
+
+  if (isCorrect) {
     endGame(true);
     return;
   }
 
-  renderGuess(country, false);
+  attemptsEl.textContent = `${MAX_GUESSES - state.guesses.length} guesses left`;
   updateZoom();
 
   if (state.guesses.length >= MAX_GUESSES) {
@@ -355,24 +389,108 @@ guessForm.addEventListener("submit", (e) => {
 
 function endGame(won) {
   state.gameOver = true;
-  setZoomStep(1);
-  updateFlagVisibility(); // reveals the flag even in Color Match mode, now that the round is over
   guessInput.disabled = true;
   playAgainBtn.classList.add("show");
-  showStatus(won ? "Solved! 🎉" : `The flag was ${state.answer.name}`);
+
+  if (state.mode === "zoom") {
+    setZoomStep(1);
+    showStatus(won ? "Solved! 🎉" : `The flag was ${state.answer.name}`);
+  } else {
+    flagViewport.classList.remove("mystery");
+    flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`; // full, unmasked reveal
+    if (won) {
+      winBadgeEl.classList.remove("hidden");
+    } else {
+      showStatus(`The flag was ${state.answer.name}`);
+    }
+  }
 }
 
-// Starts a fresh round with a random country, in whichever mode is
-// currently selected. Used by both "play again" and switching modes.
-function resetRound() {
-  state.answer = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
-  state.guesses = [];
-  state.gameOver = false;
-  guessInput.disabled = false;
-  guessList.innerHTML = "";
-  playAgainBtn.classList.remove("show");
-  showStatus("");
-  setup();
+// ============================================================
+// SETTINGS
+// ============================================================
+
+settingsBtn.addEventListener("click", () => {
+  const willShow = settingsPanel.classList.contains("hidden");
+  settingsPanel.classList.toggle("hidden");
+  settingsBtn.setAttribute("aria-expanded", String(willShow));
+});
+
+showFlagsToggle.addEventListener("change", () => {
+  showFlagsInList = showFlagsToggle.checked;
+  localStorage.setItem(SHOW_FLAGS_KEY, String(showFlagsInList));
+  renderAutocompleteOptions(guessInput.value);
+});
+
+// ============================================================
+// AUTOCOMPLETE (custom, so we can show flag thumbnails)
+// ============================================================
+
+let currentOptions = [];
+let activeIndex = -1;
+
+function renderAutocompleteOptions(query) {
+  const q = query.trim().toLowerCase();
+  currentOptions = q
+    ? COUNTRIES.filter(c => c.name.toLowerCase().includes(q))
+    : COUNTRIES.slice();
+
+  activeIndex = -1;
+
+  if (currentOptions.length === 0) {
+    autocompleteList.classList.add("hidden");
+    autocompleteList.innerHTML = "";
+    return;
+  }
+
+  autocompleteList.innerHTML = currentOptions.map((c, i) => `
+    <div class="autocomplete-option" data-index="${i}">
+      ${showFlagsInList ? `<img class="autocomplete-flag" src="https://flagcdn.com/w40/${c.code}.png" alt="">` : ""}
+      <span>${c.name}</span>
+    </div>
+  `).join("");
+  autocompleteList.classList.remove("hidden");
+
+  autocompleteList.querySelectorAll(".autocomplete-option").forEach(opt => {
+    opt.addEventListener("mousedown", (e) => {
+      e.preventDefault(); // keep input focused so the click registers before any blur-close
+      const country = currentOptions[Number(opt.dataset.index)];
+      guessInput.value = country.name;
+      autocompleteList.classList.add("hidden");
+    });
+  });
 }
 
-playAgainBtn.addEventListener("click", resetRound);
+function updateActiveOption(opts) {
+  opts.forEach((o, i) => o.classList.toggle("active", i === activeIndex));
+  if (opts[activeIndex]) opts[activeIndex].scrollIntoView({ block: "nearest" });
+}
+
+guessInput.addEventListener("input", () => renderAutocompleteOptions(guessInput.value));
+guessInput.addEventListener("focus", () => renderAutocompleteOptions(guessInput.value));
+
+guessInput.addEventListener("keydown", (e) => {
+  if (autocompleteList.classList.contains("hidden")) return;
+  const opts = autocompleteList.querySelectorAll(".autocomplete-option");
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeIndex = Math.min(activeIndex + 1, opts.length - 1);
+    updateActiveOption(opts);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeIndex = Math.max(activeIndex - 1, 0);
+    updateActiveOption(opts);
+  } else if (e.key === "Enter" && activeIndex >= 0) {
+    e.preventDefault();
+    guessInput.value = currentOptions[activeIndex].name;
+    autocompleteList.classList.add("hidden");
+  } else if (e.key === "Escape") {
+    autocompleteList.classList.add("hidden");
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".autocomplete")) {
+    autocompleteList.classList.add("hidden");
+  }
+});
