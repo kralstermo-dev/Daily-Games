@@ -4,6 +4,13 @@ A small library of daily guessing games (Wordle, Flagle, and more to
 come), built with plain HTML/CSS/JS (no build tools, no frameworks) so
 it can be hosted for free on GitHub Pages.
 
+> Work In Progress
+
+## Link
+https://kralstermo-dev.github.io/Daily-Games/
+
+---
+
 ## Project structure
 
 ```
