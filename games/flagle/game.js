@@ -20,7 +20,11 @@ const PIXEL_THRESHOLD_SQ = PIXEL_THRESHOLD * PIXEL_THRESHOLD;
 // renderGuess() / applyModeUI() below.
 const MODES = [
   { id: "zoom", label: "Zoomed Flag", desc: "Guess the country from a zoomed-in flag. It zooms out each guess." },
+<<<<<<< HEAD
   { id: "colormatch", label: "Color Match", desc: "The flag starts blank. Each guess reveals a bit more of the true flag wherever its colors line up — it gets clearer the more you guess." },
+=======
+  { id: "colormatch", label: "Color Match", desc: "The flag starts blank. Each guess shows how much of its color lines up with the answer, pixel for pixel." },
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
 ];
 const MODE_STORAGE_KEY = "flagle-mode";
 const SHOW_FLAGS_KEY = "flagle-show-flags";
@@ -106,9 +110,14 @@ function pixelMatchRender(guessImg, answerImg, w, h) {
 
   let matched = 0;
   const total = w * h;
+<<<<<<< HEAD
   const matchedMask = new Uint8Array(total);
 
   for (let i = 0, p = 0; i < gData.length; i += 4, p++) {
+=======
+
+  for (let i = 0; i < gData.length; i += 4) {
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
     const dr = gData[i] - aData[i];
     const dg = gData[i + 1] - aData[i + 1];
     const db = gData[i + 2] - aData[i + 2];
@@ -119,12 +128,16 @@ function pixelMatchRender(guessImg, answerImg, w, h) {
       outData[i + 2] = gData[i + 2];
       outData[i + 3] = 255;
       matched++;
+<<<<<<< HEAD
       matchedMask[p] = 1;
+=======
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
     } else {
       outData[i + 3] = 0; // transparent — page background shows through
     }
   }
   outCtx.putImageData(outImageData, 0, 0);
+<<<<<<< HEAD
   return { pct: (matched / total) * 100, canvas: outCanvas, matchedMask };
 }
 
@@ -157,6 +170,9 @@ async function renderAccumulatedReveal() {
   flagImg.style.setProperty("--ox", "50%");
   flagImg.style.setProperty("--oy", "50%");
   flagViewport.classList.remove("mystery");
+=======
+  return { pct: (matched / total) * 100, canvas: outCanvas };
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
 }
 
 // ============================================================
@@ -214,7 +230,11 @@ function applyModeUI() {
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-selected", active);
   });
+<<<<<<< HEAD
   modeDescEl.textContent = (MODES.find(m => m.id === state.mode) || MODES[0]).desc;
+=======
+  modeDescEl.textContent = MODES.find(m => m.id === state.mode).desc;
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
   attemptsEl.textContent = `${MAX_GUESSES - state.guesses.length} guesses left`;
 
   if (state.mode === "colormatch") {
@@ -233,7 +253,10 @@ function applyModeUI() {
 function setup() {
   flagImg.crossOrigin = "anonymous";
   state.answerImgPromise = loadImage(`https://flagcdn.com/w320/${state.answer.code}.png`);
+<<<<<<< HEAD
   state.revealedMask = new Uint8Array(REVEAL_W * REVEAL_H); // nothing discovered yet this round
+=======
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
 
   const h = hashString(state.answer.code);
   // Keep the crop point closer to center (35–65%) — leaves enough "overscan" at
@@ -247,6 +270,25 @@ function setup() {
   }
   applyModeUI();
 }
+
+function resetRound() {
+  state.answer = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
+  state.guesses = [];
+  state.gameOver = false;
+  guessInput.disabled = false;
+  guessInput.value = "";
+  guessList.innerHTML = "";
+  autocompleteList.classList.add("hidden");
+  playAgainBtn.classList.remove("show");
+  winBadgeEl.classList.add("hidden");
+  showStatus("");
+  setup();
+}
+playAgainBtn.addEventListener("click", resetRound);
+
+// ============================================================
+// ZOOM MODE
+// ============================================================
 
 function resetRound() {
   state.answer = COUNTRIES[Math.floor(Math.random() * COUNTRIES.length)];
@@ -309,6 +351,7 @@ async function fillColorMatchRow(row, country, isCorrect) {
       state.answerImgPromise,
       loadImage(`https://flagcdn.com/w320/${country.code}.png`),
     ]);
+<<<<<<< HEAD
     const { pct, canvas, matchedMask } = pixelMatchRender(guessImg, answerImg, REVEAL_W, REVEAL_H);
     const dataUrl = canvas.toDataURL();
 
@@ -326,6 +369,23 @@ async function fillColorMatchRow(row, country, isCorrect) {
     // clobbering the final reveal if this resolves after the round wrapped up).
     if (!state.gameOver) {
       renderAccumulatedReveal();
+=======
+    const { pct, canvas } = pixelMatchRender(guessImg, answerImg, 280, 187);
+    const dataUrl = canvas.toDataURL();
+
+    pctEl.textContent = `${pct.toFixed(1)}%`;
+    iconEl.src = dataUrl;
+
+    // Update the main viewport to this guess's masked reveal — but only if
+    // the round hasn't already ended (avoids clobbering the final reveal if
+    // this resolves after a correct/final guess already wrapped things up).
+    if (!state.gameOver) {
+      flagImg.src = dataUrl;
+      flagImg.style.setProperty("--zoom", 1);
+      flagImg.style.setProperty("--ox", "50%");
+      flagImg.style.setProperty("--oy", "50%");
+      flagViewport.classList.remove("mystery");
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
     }
   } catch (err) {
     pctEl.textContent = "—";
@@ -347,7 +407,11 @@ function renderGuess(country, isCorrect) {
     row.innerHTML = `
       <span class="flagle-name">${country.name}</span>
       <span class="cm-pct">…</span>
+<<<<<<< HEAD
       <div class="cm-icon-wrap"><img class="cm-icon" src="" alt="${country.name} flag, matched regions"></div>
+=======
+      <img class="cm-icon" src="" alt="${country.name} flag, matched regions">
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
     `;
     guessList.prepend(row);
     fillColorMatchRow(row, country, isCorrect);
@@ -449,6 +513,88 @@ settingsBtn.addEventListener("click", () => {
   const willShow = settingsPanel.classList.contains("hidden");
   settingsPanel.classList.toggle("hidden");
   settingsBtn.setAttribute("aria-expanded", String(willShow));
+<<<<<<< HEAD
+=======
+});
+
+showFlagsToggle.addEventListener("change", () => {
+  showFlagsInList = showFlagsToggle.checked;
+  localStorage.setItem(SHOW_FLAGS_KEY, String(showFlagsInList));
+  renderAutocompleteOptions(guessInput.value);
+});
+
+// ============================================================
+// AUTOCOMPLETE (custom, so we can show flag thumbnails)
+// ============================================================
+
+let currentOptions = [];
+let activeIndex = -1;
+
+function renderAutocompleteOptions(query) {
+  const q = query.trim().toLowerCase();
+  currentOptions = q
+    ? COUNTRIES.filter(c => c.name.toLowerCase().includes(q))
+    : COUNTRIES.slice();
+
+  activeIndex = -1;
+
+  if (currentOptions.length === 0) {
+    autocompleteList.classList.add("hidden");
+    autocompleteList.innerHTML = "";
+    return;
+  }
+
+  autocompleteList.innerHTML = currentOptions.map((c, i) => `
+    <div class="autocomplete-option" data-index="${i}">
+      ${showFlagsInList ? `<img class="autocomplete-flag" src="https://flagcdn.com/w40/${c.code}.png" alt="">` : ""}
+      <span>${c.name}</span>
+    </div>
+  `).join("");
+  autocompleteList.classList.remove("hidden");
+
+  autocompleteList.querySelectorAll(".autocomplete-option").forEach(opt => {
+    opt.addEventListener("mousedown", (e) => {
+      e.preventDefault(); // keep input focused so the click registers before any blur-close
+      const country = currentOptions[Number(opt.dataset.index)];
+      guessInput.value = country.name;
+      autocompleteList.classList.add("hidden");
+    });
+  });
+}
+
+function updateActiveOption(opts) {
+  opts.forEach((o, i) => o.classList.toggle("active", i === activeIndex));
+  if (opts[activeIndex]) opts[activeIndex].scrollIntoView({ block: "nearest" });
+}
+
+guessInput.addEventListener("input", () => renderAutocompleteOptions(guessInput.value));
+guessInput.addEventListener("focus", () => renderAutocompleteOptions(guessInput.value));
+
+guessInput.addEventListener("keydown", (e) => {
+  if (autocompleteList.classList.contains("hidden")) return;
+  const opts = autocompleteList.querySelectorAll(".autocomplete-option");
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    activeIndex = Math.min(activeIndex + 1, opts.length - 1);
+    updateActiveOption(opts);
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    activeIndex = Math.max(activeIndex - 1, 0);
+    updateActiveOption(opts);
+  } else if (e.key === "Enter" && activeIndex >= 0) {
+    e.preventDefault();
+    guessInput.value = currentOptions[activeIndex].name;
+    autocompleteList.classList.add("hidden");
+  } else if (e.key === "Escape") {
+    autocompleteList.classList.add("hidden");
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".autocomplete")) {
+    autocompleteList.classList.add("hidden");
+  }
+>>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
 });
 
 showFlagsToggle.addEventListener("change", () => {
