@@ -393,21 +393,6 @@ button:focus-visible,
 .mode-btn.active { background: var(--accent); color: #14171c; }
 
 .flag-viewport.mystery img { opacity: 0; }
-<<<<<<< HEAD
-=======
-.flag-viewport.mystery::after {
-  content: "?";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 56px;
-  font-weight: 600;
-  color: var(--line);
-}
->>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
 
 .flag-viewport img {
   position: absolute;
@@ -568,6 +553,7 @@ button:focus-visible,
 }
 
 .flagle-name { font-weight: 600; }
+.flagle-dist { font-family: var(--font-mono); color: var(--ink-dim); }
 .flagle-arrow { color: var(--accent-2); display: flex; }
 .flagle-pct {
   font-family: var(--font-mono);
@@ -581,7 +567,6 @@ button:focus-visible,
   font-weight: 700;
 }
 
-<<<<<<< HEAD
 /* Color Match mode guess rows: name / % / masked flag icon — see cm-mode below */
 .flagle-row.cm-mode {
   grid-template-columns: 1fr auto 44px;
@@ -613,31 +598,6 @@ button:focus-visible,
 
 .flagle-row.cm-mode.correct .flagle-name,
 .flagle-row.cm-mode.correct .cm-pct {
-=======
-.flagle-colormatch {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 8px;
-  margin-top: 4px;
-  border-top: 1px solid var(--line);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--ink-dim);
-}
-
-.flagle-colormatch.loading { font-style: italic; }
-
-.colormatch-img {
-  width: 40px;
-  height: 27px;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-}
-
-.colormatch-label {
->>>>>>> bdc6c8bd918e3ca0cb0b2d131ca6e8cbcfb0c3c2
   color: var(--accent-2);
 }
 
