@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from rule34dle.vercel.app/daily.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 29 Jul 2026 20:33:36 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    <script>
+        (function() {
+            // Check if we're being embedded in an iframe
+            if (window.self !== window.top) {
+                // We're in an iframe - try to break out
+                try {
+                    var parentHostname = window.top.location.hostname;
+                    // If we can read parent hostname and it's the fake site, break out
+                    if (parentHostname === 'rule34dle.org' || parentHostname === 'www.rule34dle.org') {
+                        window.top.location.replace('https://rule34dle.vercel.app' + window.location.pathname + '?redirected_from_fake=1');
+                    }
+                } catch (e) {
+                    // Cross-origin or sandboxed iframe - we can't break out
+                    // Instead, show a full-page overlay warning the user
+                    console.warn('Site is embedded in an iframe - showing warning overlay');
+
+                    // Set a flag to show the overlay after DOM loads
+                    window.iframeEmbedded = true;
+
+                    // Also try to break out anyway (might work in some browsers)
+                    try {
+                        window.top.location.replace('https://rule34dle.vercel.app' + window.location.pathname + '?iframe_embedded=1');
+                    } catch (e2) {
+                        // Silently fail - we'll show the overlay instead
+                    }
+                }
+            }
+
+            if (window.location.hostname === 'rule34dle.org' || window.location.hostname === 'www.rule34dle.org') {
+
+                var path = window.location.pathname;
+                if (path === '/game' || path === 'game/index.html') {
+                    path = 'index.html';
+                }
+                window.location.replace('https://rule34dle.vercel.app' + path + '?redirected_from_fake=1' + window.location.hash);
+            }
+        })();
+    </script>
+
+    <script>
+        (function() {
+            // Check the referrer to see if user came from the fake site
+            var referrer = document.referrer;
+            var cameFromFakeSite = false;
+
+            if (referrer) {
+                try {
+                    var referrerUrl = new URL(referrer.html);
+                    var referrerHostname = referrerUrl.hostname;
+
+                    // Check if referred from rule34dle.org (the fake site)
+                    if (referrerHostname === 'rule34dle.org' || referrerHostname === 'www.rule34dle.org') {
+                        cameFromFakeSite = true;
+                        console.warn('⚠️ User was referred from fake site:', referrer);
+
+                        // Store in localStorage so we can detect it even after new tab opens
+                        localStorage.setItem('referred_from_fake_site', Date.now().toString());
+
+                        // Optionally, you can track this in analytics
+                        if (typeof gtag === 'function') {
+                            gtag('event', 'fake_site_referrer', {
+                                'event_category': 'security',
+                                'event_label': referrer,
+                                'value': 1
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing referrer:', e);
+                }
+            }
+
+            // Also check localStorage for recent fake site visits (within last 5 minutes)
+            var storedReferral = localStorage.getItem('referred_from_fake_site');
+            if (storedReferral && !cameFromFakeSite) {
+                var referralTime = parseInt(storedReferral);
+                var fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+
+                if (referralTime > fiveMinutesAgo) {
+                    console.warn('⚠️ User recently visited from fake site (localStorage detection)');
+                    cameFromFakeSite = true;
+
+                    // Track this detection method too
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'fake_site_referrer_localStorage', {
+                            'event_category': 'security',
+                            'event_label': 'new_tab_detection',
+                            'value': 1
+                        });
+                    }
+                } else {
+                    // Clear old localStorage entry
+                    localStorage.removeItem('referred_from_fake_site');
+                }
+            }
+
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('redirected_from_fake') === '1' || urlParams.get('iframe_embedded') === '1' || cameFromFakeSite) {
+                var cleanUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+
+                window.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(function() {
+                        var warningPopup = document.getElementById('fake-site-warning-popup');
+                        if (warningPopup) {
+                            warningPopup.style.display = 'flex';
+                        }
+                    }, 500);
+                });
+            }
+
+            // If we detected iframe embedding, show overlay immediately
+            if (window.iframeEmbedded) {
+                window.addEventListener('DOMContentLoaded', function() {
+                    // Create and show full-page iframe warning overlay
+                    var overlay = document.createElement('div');
+                    overlay.id = 'iframe-warning-overlay';
+                    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999999; display: flex; align-items: center; justify-content: center;';
+
+                    var content = document.createElement('div');
+                    content.style.cssText = 'background: white; padding: 40px; border-radius: 10px; max-width: 600px; text-align: center; border: 5px solid #ff4444;';
+                    content.innerHTML = '<h1 style="color: #ff4444; margin-bottom: 20px;">⚠️ WARNING: FAKE SITE DETECTED</h1>' +
+                        '<p style="font-size: 18px; margin-bottom: 20px;"><strong>This site is being embedded by an unauthorized fake website!</strong></p>' +
+                        '<p style="margin-bottom: 20px;">You are currently on a fake site that stole Rule34dle\'s code.</p>' +
+                        '<p style="margin-bottom: 20px;"><strong style="color: #ff4444;">rule34dle.org is a fake website that\'s stealing my code. Please spread the word!</strong></p>' +
+                        '<a href="https://rule34dle.vercel.app" style="display: inline-block; background: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;" target="_blank">GO TO OFFICIAL SITE</a>' +
+                        '<p style="margin-top: 20px; font-size: 14px; color: #666;">Please bookmark the official site to avoid this in the future.</p>';
+
+                    overlay.appendChild(content);
+                    document.body.appendChild(overlay);
+
+                    // Prevent interaction with the page beneath
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+        })();
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V5MNCGL0QC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-V5MNCGL0QC');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule34dle Daily - A Higher or Lower Game</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rule34dle.vercel.app/daily">
+    <meta property="og:title" content="Rule34dle Daily - A Higher or Lower Game">
+    <meta property="og:description" content="Play the daily Rule34dle challenge - 10 rounds of tag guessing">
+    <meta property="og:image" content="https://rule34dle.vercel.app/preview-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://rule34dle.vercel.app/daily">
+    <meta property="twitter:title" content="Rule34dle Daily - A Higher or Lower Game">
+    <meta property="twitter:description" content="Play the daily Rule34dle challenge - 10 rounds of tag guessing">
+    <meta property="twitter:image" content="https://rule34dle.vercel.app/preview-image.png">
+
+    <!-- Additional SEO -->
+    <meta name="description" content="Play the daily Rule34dle challenge - 10 rounds of tag guessing">
+    <meta name="keywords" content="rule34, higher or lower, guessing game, daily challenge, tags">
+    <meta name="author" content="u/DandelionGaming">
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Load cache manager before other scripts -->
+    <script src="cache-manager.js"></script>
+
+    <script async src="../pagead2.googlesyndication.com/pagead/js/ffb8e.txt?client=ca-pub-6072039563346885"
+            crossorigin="anonymous"></script>
+</head>
+<body class="preload daily">
+    <div class="container">
+        <header>
+            <img src="logo.png" alt="Rule34dle" class="logo">
+            <a href="index.html" class="back-btn">← Back to Main</a>
+            <a href="https://ao3dle.vercel.app/" class="ao3dle-btn" target="_blank">New: Check out Ao3dle (Alpha)</a>
+            <button id="daily-how-to-play-btn" class="how-to-play-btn">How to Play</button>
+
+            <div class="daily-header">
+                <h2>Daily Challenge (beta)</h2>
+                <div class="daily-stats">
+                    <div class="stat">
+                        <span class="label">Round:</span>
+                        <span id="current-round" class="value">1/10</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading Screen -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading daily challenge...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h2>Connection Error</h2>
+            <p>Unable to load character data. Please check your internet connection and try again.</p>
+            <button onclick="location.reload()">Retry</button>
+        </div>
+
+        <!-- Game Content -->
+        <div id="game-content" class="game-content" style="display: none;">
+            <!-- Keep score tracker directly above the game row -->
+            <div class="score-tracker">
+                <div class="score-squares" id="score-squares">
+                    <!-- Score squares will be dynamically generated -->
+                </div>
+            </div>
+
+            <!-- Wrap the left/vs/right into a dedicated row container -->
+            <div class="daily-game-row">
+                <div class="character-container left">
+                    <div class="character-card">
+                        <h2 id="left-character">Character Name</h2>
+                        <div id="left-character-notes" class="character-subtext"></div>
+                        <div id="left-count-container" class="post-count hard-hidden" style="display: none;">
+                            <span id="left-count-display">0</span>
+                            <span class="label">posts</span>
+                        </div>
+                        <div class="question-mark left-question-mark">?</div>
+                    </div>
+                </div>
+
+                <div class="vs-section">
+                    <div class="instruction-text">Which has more posts?</div>
+                    <div class="vs-text">VS</div>
+                </div>
+
+                <div class="character-container right">
+                    <div class="character-card">
+                        <h2 id="right-character">Character Name</h2>
+                        <div id="right-character-notes" class="character-subtext"></div>
+                        <div id="right-count-container" class="post-count hard-hidden" style="display: none;">
+                            <span id="right-count">0</span>
+                            <span class="label">posts</span>
+                        </div>
+                        <div class="question-mark right-question-mark">?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Overlay -->
+        <div id="result-overlay" class="result-overlay" style="display: none;">
+            <div class="result-content">
+                <h2 id="result-text" class="result-text">Correct!</h2>
+                <div class="result-buttons">
+                    <button id="next-btn" class="btn primary">Next Round</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Score Popup -->
+        <div id="final-score-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Daily Challenge Complete!</h2>
+                </div>
+                <div class="popup-body">
+                    <div class="final-score">
+                        <h3>Your Score: <span id="final-score-text">0/10</span></h3>
+                        <div class="score-breakdown" id="score-breakdown">
+                            <!-- Score squares will be shown here -->
+                        </div>
+                    </div>
+                    <p>Come back tomorrow for a new daily challenge!</p>
+
+                    <!-- Countdown to next daily (UTC) -->
+                    <div class="countdown-container">
+                        <div class="countdown-label">Next Daily in</div>
+                        <div id="next-daily-timer" class="countdown-time">--:--:--</div>
+                        <div class="countdown-sub">rolls over at 00:00 UTC</div>
+                    </div>
+                </div>
+                <div class="popup-footer">
+                    <button id="play-again-btn" class="btn secondary">Play Main Mode</button>
+                    <button id="share-score-btn" class="btn primary">Share Score</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily How to Play Popup -->
+        <div id="daily-how-to-play-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>How to Play - Daily Challenge</h2>
+                    <button id="close-daily-popup" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p>Welcome to the Rule34dle Daily Challenge! Here's how it works:</p>
+                    <ul>
+                        <li><strong>10 Rounds:</strong> You'll play exactly 10 rounds of tag comparisons</li>
+                        <li><strong>New tags each round:</strong> Each round features 2 completely new tags (no franchise tags)</li>
+                        <li><strong>Make your choice:</strong> Click on the tag you think has MORE posts</li>
+                        <li><strong>Track your progress:</strong> Green squares = correct, Red squares = incorrect</li>
+                        <li><strong>Same for everyone:</strong> Everyone gets the same 10 rounds each day</li>
+                        <li><strong>One chance per day:</strong> Come back tomorrow for new challenges!</li>
+                        <li><strong>Note:</strong> Daily challenge might be a bit unstable around midnight UTC!</li>
+                    </ul>
+                    <p>Loading screen ahh tooltip: Click the red/green squares to review the previous rounds!</p>
+                </div>
+                <div class="popup-footer">
+                    <button id="daily-got-it-btn" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="fake-site-warning-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Warning: Potentially Infected Site</h2>
+                    <button id="close-fake-warning-popup" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p>It appears you were redirected from a site that may be pretending to be Rule34dle.</p>
+                    <p>Please ensure that you always access Rule34dle through the official link:</p>
+                    <p><a href="index.html" target="_blank">https://rule34dle.vercel.app</a></p>
+                    <p>Clicking "OK" will take you to the official site. If you see this message again, please be cautious.</p>
+                </div>
+                <div class="popup-footer">
+                    <button id="proceed-to-official-site" class="btn primary">OK, Take me there</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Problem Button -->
+    <button id="report-problem-btn" class="report-problem-btn">Report Problem</button>
+
+    <!-- Report Problem Popup -->
+    <div id="report-problem-popup" class="report-popup-overlay" style="display: none;">
+        <div class="report-popup-content">
+            <div class="report-popup-header">
+                <h3>Report a Problem</h3>
+                <button id="close-report-popup" class="close-popup">×</button>
+            </div>
+            <div class="report-subtext">
+                <p>Submit feedback, bugs or incorrect tag information here</p>
+            </div>
+            <form id="report-form" class="report-form">
+                <div class="form-group">
+                    <label for="report-title">Title*</label>
+                    <input type="text" id="report-title" name="title" required maxlength="100" placeholder="Brief description of the issue">
+                </div>
+                <div class="form-group">
+                    <label for="report-contact">Contact Info (optional)</label>
+                    <input type="text" id="report-contact" name="contact" maxlength="100" placeholder="If you want me to get back to you">
+                </div>
+                <div class="form-group">
+                    <label for="report-description">Description*</label>
+                    <textarea id="report-description" name="description" required maxlength="1000" rows="5" placeholder="Please describe the problem in detail..."></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" id="cancel-report" class="btn secondary">Cancel</button>
+                    <button type="submit" id="submit-report" class="btn primary">Submit Report</button>
+                </div>
+            </form>
+            <div id="report-status" class="report-status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="daily.js"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+
+    <footer class="footer" style="margin-top: -24px; margin-bottom: 24px;">
+        <p>Made by <a href="https://reddit.com/u/DandelionGaming" target="_blank">u/DandelionGaming</a> / <a href="https://x.com/DryIcedMatcha" target="_blank">DryIcedMatcha on Twitter</a></p>
+        <p>Original idea by <a href="https://reddit.com/u/PensAndEndorsement" target="_blank">u/PensAndEndorsement</a> on the <a href="https://www.reddit.com/r/northernlion/comments/1mpi34q/came_up_with_some_new_dles_am_i_cooking_or_am_i/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button" target="_blank">Northernlion Subreddit</a></p>
+        <script type='text/javascript' src='../storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'Z8Z11JX1QO');kofiwidget2.draw();</script>
+        <p><button id="changelog-btn" class="changelog-footer-btn">View Changelog</button></p>
+    </footer>
+</body>
+
+<!-- Mirrored from rule34dle.vercel.app/daily.html by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 29 Jul 2026 20:33:36 GMT -->
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from rule34dle.vercel.app/ by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 29 Jul 2026 20:33:32 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+    <!-- Domain Protection - Must be first script -->
+    <script>
+        (function() {
+            // Check if we're being embedded in an iframe
+            if (window.self !== window.top) {
+                // We're in an iframe - try to break out
+                try {
+                    var parentHostname = window.top.location.hostname;
+                    // If we can read parent hostname and it's the fake site, break out
+                    if (parentHostname === 'rule34dle.org' || parentHostname === 'www.rule34dle.org') {
+                        window.top.location.replace('https://rule34dle.vercel.app' + window.location.pathname + '?redirected_from_fake=1');
+                    }
+                } catch (e) {
+                    // Cross-origin or sandboxed iframe - we can't break out
+                    // Instead, show a full-page overlay warning the user
+                    console.warn('Site is embedded in an iframe - showing warning overlay');
+
+                    // Set a flag to show the overlay after DOM loads
+                    window.iframeEmbedded = true;
+
+                    // Also try to break out anyway (might work in some browsers)
+                    try {
+                        window.top.location.replace('https://rule34dle.vercel.app' + window.location.pathname + '?iframe_embedded=1');
+                    } catch (e2) {
+                        // Silently fail - we'll show the overlay instead
+                    }
+                }
+            }
+
+            // Check if the current domain is the unauthorized one (for direct visits)
+            if (window.location.hostname === 'rule34dle.org' || window.location.hostname === 'www.rule34dle.org') {
+                // Handle /game path specifically
+                var path = window.location.pathname;
+                if (path === '/game' || path === 'game/index.html') {
+                    path = 'index.html'; // Redirect /game to the main page
+                }
+                // Redirect to the legitimate site with a warning parameter
+                window.location.replace('https://rule34dle.vercel.app' + path + '?redirected_from_fake=1' + window.location.hash);
+            }
+        })();
+    </script>
+
+    <!-- Check if redirected from fake site and show warning -->
+    <script>
+        (function() {
+            // Check the referrer to see if user came from the fake site
+            var referrer = document.referrer;
+            var cameFromFakeSite = false;
+            var suspiciousNoReferrer = false;
+
+            if (referrer) {
+                try {
+                    var referrerUrl = new URL(referrer.html);
+                    var referrerHostname = referrerUrl.hostname;
+
+                    // Check if referred from rule34dle.org (the fake site)
+                    if (referrerHostname === 'rule34dle.org' || referrerHostname === 'www.rule34dle.org') {
+                        cameFromFakeSite = true;
+                        console.warn('⚠️ User was referred from fake site:', referrer);
+
+                        // Store in localStorage so we can detect it even after new tab opens
+                        localStorage.setItem('referred_from_fake_site', Date.now().toString());
+
+                        // Optionally, you can track this in analytics
+                        if (typeof gtag === 'function') {
+                            gtag('event', 'fake_site_referrer', {
+                                'event_category': 'security',
+                                'event_label': referrer,
+                                'value': 1
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error parsing referrer:', e);
+                }
+            } else {
+                // No referrer detected - could be from noopener noreferrer link
+                // Check if this is a first-time visit or suspicious navigation
+                var hasSeenNoReferrerWarning = localStorage.getItem('seen_no_referrer_warning');
+                var isDirectVisit = !window.history.length || window.history.length === 1;
+
+                // Only flag as suspicious if user hasn't seen the warning before
+                // This catches users coming from the fake site's noopener noreferrer links
+                if (!hasSeenNoReferrerWarning) {
+                    suspiciousNoReferrer = true;
+                    console.warn('⚠️ User arrived without referrer - potentially from noopener noreferrer link');
+
+                    // Track this in analytics
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'no_referrer_detection', {
+                            'event_category': 'security',
+                            'event_label': 'potential_fake_site_link',
+                            'value': 1
+                        });
+                    }
+                }
+            }
+
+            // Also check localStorage for recent fake site visits (within last 5 minutes)
+            var storedReferral = localStorage.getItem('referred_from_fake_site');
+            if (storedReferral && !cameFromFakeSite) {
+                var referralTime = parseInt(storedReferral);
+                var fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+
+                if (referralTime > fiveMinutesAgo) {
+                    console.warn('⚠️ User recently visited from fake site (localStorage detection)');
+                    cameFromFakeSite = true;
+
+                    // Track this detection method too
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'fake_site_referrer_localStorage', {
+                            'event_category': 'security',
+                            'event_label': 'new_tab_detection',
+                            'value': 1
+                        });
+                    }
+                } else {
+                    // Clear old localStorage entry
+                    localStorage.removeItem('referred_from_fake_site');
+                }
+            }
+
+            // Check if user was redirected from the fake site via URL params
+            var urlParams = new URLSearchParams(window.location.search);
+            var redirectedFromFake = urlParams.get('redirected_from_fake') === '1';
+            var iframeEmbedded = urlParams.get('iframe_embedded') === '1';
+
+            if (redirectedFromFake || iframeEmbedded || cameFromFakeSite || suspiciousNoReferrer) {
+                // Remove the parameter from URL without reloading
+                var cleanUrl = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+
+                // Show appropriate warning popup after page loads
+                window.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(function() {
+                        if (suspiciousNoReferrer && !redirectedFromFake && !iframeEmbedded && !cameFromFakeSite) {
+                            // User arrived without referrer - show no-referrer warning popup
+                            var noReferrerPopup = document.getElementById('no-referrer-warning-popup');
+                            if (noReferrerPopup) {
+                                noReferrerPopup.style.display = 'flex';
+                                // Mark that user has seen this warning
+                                localStorage.setItem('seen_no_referrer_warning', Date.now().toString());
+                            }
+                        } else if (cameFromFakeSite && !redirectedFromFake && !iframeEmbedded) {
+                            // User came via referral link - show nice popup
+                            var referralPopup = document.getElementById('fake-site-referral-popup');
+                            if (referralPopup) {
+                                referralPopup.style.display = 'flex';
+                            }
+                        } else {
+                            // User tried to visit fake domain directly or was embedded - show warning
+                            var warningPopup = document.getElementById('fake-site-warning-popup');
+                            if (warningPopup) {
+                                warningPopup.style.display = 'flex';
+                            }
+                        }
+                    }, 500);
+                });
+            }
+
+            // If we detected iframe embedding, show overlay immediately
+            if (window.iframeEmbedded) {
+                window.addEventListener('DOMContentLoaded', function() {
+                    // Create and show full-page iframe warning overlay
+                    var overlay = document.createElement('div');
+                    overlay.id = 'iframe-warning-overlay';
+                    overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999999; display: flex; align-items: center; justify-content: center;';
+
+                    var content = document.createElement('div');
+                    content.style.cssText = 'background: white; padding: 40px; border-radius: 10px; max-width: 600px; text-align: center; border: 5px solid #ff4444;';
+                    content.innerHTML = '<h1 style="color: #ff4444; margin-bottom: 20px;">⚠️ WARNING: FAKE SITE DETECTED</h1>' +
+                        '<p style="font-size: 18px; margin-bottom: 20px;"><strong>This site is being embedded by an unauthorized fake website!</strong></p>' +
+                        '<p style="margin-bottom: 20px;">You are currently on a fake site that stole Rule34dle\'s code.</p>' +
+                        '<p style="margin-bottom: 20px;"><strong style="color: #ff4444;">rule34dle.org is a fake website that\'s stealing my code. Please spread the word!</strong></p>' +
+                        '<p style="margin-bottom: 30px;"><strong>Official Site:</strong> rule34dle.vercel.app</p>' +
+                        '<a href="https://rule34dle.vercel.app" style="display: inline-block; background: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px; font-weight: bold;" target="_blank">GO TO OFFICIAL SITE</a>' +
+                        '<p style="margin-top: 20px; font-size: 14px; color: #666;">Please bookmark the official site to avoid this in the future.</p>';
+
+                    overlay.appendChild(content);
+                    document.body.appendChild(overlay);
+
+                    // Prevent interaction with the page beneath
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+        })();
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V5MNCGL0QC"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-V5MNCGL0QC');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule34dle - A Higher or Lower Game</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rule34dle.vercel.app/">
+    <meta property="og:title" content="Rule34dle - A Higher or Lower Game">
+    <meta property="og:description" content="Guess which Character or Tag has more posts on Rule 34">
+    <meta property="og:image" content="https://rule34dle.vercel.app/preview-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://rule34dle.vercel.app/">
+    <meta property="twitter:title" content="Rule34dle - A Higher or Lower Game">
+    <meta property="twitter:description" content="Guess which Character or Tag has more posts on Rule 34">
+    <meta property="twitter:image" content="https://rule34dle.vercel.app/preview-image.png">
+
+    <!-- Additional SEO -->
+    <meta name="description" content="Guess which Character or Tag has more posts on Rule 34">
+    <meta name="keywords" content="rule34, higher or lower, guessing game, characters, tags, post count">
+    <meta name="author" content="u/DandelionGaming">
+
+    <link rel="stylesheet" href="style.css">
+    <!-- Load cache manager before other scripts -->
+    <script src="cache-manager.js"></script>
+    <script async src="../pagead2.googlesyndication.com/pagead/js/ffb8e.txt?client=ca-pub-6072039563346885"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="daily.html" class="daily-mode-btn">Daily Challenge</a>
+            <a href="https://ao3dle.vercel.app/" class="ao3dle-btn" target="_blank">New: Check out Ao3dle (Alpha)</a>
+            <img src="logo.png" alt="Rule34dle" class="logo">
+            <button id="how-to-play-btn" class="how-to-play-btn">How to Play</button>
+
+            <!-- Franchise Filter Toggle -->
+            <div class="franchise-toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="franchise-toggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Include franchises</span>
+                <button class="info-icon" id="franchise-info-btn" title="Click for more information">?</button>
+            </div>
+
+            <!-- AI Filter Toggle -->
+            <div class="ai-toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="ai-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Remove AI results</span>
+                <button class="info-icon" id="ai-info-btn" title="Click for more information">?</button>
+            </div>
+
+            <!-- Hard Mode Toggle -->
+            <div class="hard-mode-toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="hard-mode-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label"><span class="new-badge">NEW:</span> Hard Mode</span>
+                <button class="info-icon" id="hard-mode-info-btn" title="Click for more information">?</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <span class="label">Current Streak:</span>
+                    <span id="streak" class="value">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Best Streak:</span>
+                    <span id="best-streak" class="value">0</span>
+                </div>
+            </div>
+
+            <!-- Settings Button (Desktop only) - Bottom Right of Header -->
+            <div class="settings-area desktop-only">
+                <span class="twitch-integration-label">
+                    <span class="beta-text">BETA:</span>
+                    <span class="twitch-text">Twitch Integration</span>
+                </span>
+                <button id="settings-btn" class="settings-btn" title="Settings">⚙️</button>
+            </div>
+
+            <!-- Leaderboard Toggle - Only visible when Twitch integration is enabled -->
+            <div id="leaderboard-toggle-container" class="leaderboard-toggle-container" style="display: none;">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="leaderboard-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Show Chat Leaderboard</span>
+            </div>
+
+            <!-- Last Chatter Standing Toggle - Only visible when Twitch integration is enabled -->
+            <div id="last-chatter-toggle-container" class="last-chatter-toggle-container" style="display: none;">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="last-chatter-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label"><span class="new-badge">NEW:</span> Last Chatter Standing</span>
+                <button class="info-icon" id="last-chatter-info-btn" title="Click for more information">?</button>
+            </div>
+        </header>
+
+        <!-- Loading Screen -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading characters...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message" style="display: none;">
+            <h2>Connection Error</h2>
+            <p>Unable to load character data. Please check your internet connection and try again.</p>
+            <button onclick="location.reload()">Retry</button>
+        </div>
+
+        <!-- Game Content -->
+        <div class="instruction-text">Which has more posts?</div>
+        <div id="game-content" class="game-content" style="display: none;">
+            <div class="game-area">
+                <div class="character-container left">
+                    <!-- Twitch Vote Display for Left Option -->
+                    <div id="twitch-vote-left" class="twitch-vote-box" style="display: none;">
+                        <span class="vote-number" id="vote-count-1">0</span>
+                    </div>
+                    <div class="character-card">
+                        <h2 id="left-character">Character Name</h2>
+                        <div id="left-character-notes" class="character-subtext"></div>
+                        <div id="left-count-container" class="post-count">
+                            <span id="left-count-display">0</span>
+                            <span class="label">posts</span>
+                        </div>
+                        <div id="left-count-display2" class="secondary-count">0</div>
+                        <div class="question-mark" id="left-question-mark" style="display: none;">?</div>
+                    </div>
+                </div>
+
+                <!-- Middle character container for Hard Mode -->
+                <div class="character-container middle" id="middle-character-container" style="display: none;">
+                    <!-- Twitch Vote Display for Middle Option -->
+                    <div id="twitch-vote-middle" class="twitch-vote-box" style="display: none;">
+                        <span class="vote-number" id="vote-count-3">0</span>
+                    </div>
+                    <div class="character-card">
+                        <h2 id="middle-character">Character Name</h2>
+                        <div id="middle-character-notes" class="character-subtext"></div>
+                        <div id="middle-count-container" class="post-count hidden">
+                            <span id="middle-count">0</span>
+                            <span class="label">posts</span>
+                        </div>
+                        <div class="question-mark" id="middle-question-mark">?</div>
+                    </div>
+                </div>
+
+                <div class="character-container right">
+                    <!-- Twitch Vote Display for Right Option -->
+                    <div id="twitch-vote-right" class="twitch-vote-box" style="display: none;">
+                        <span class="vote-number" id="vote-count-2">0</span>
+                    </div>
+                    <div class="character-card">
+                        <h2 id="right-character">Character Name</h2>
+                        <div id="right-character-notes" class="character-subtext"></div>
+                        <div id="right-count-container" class="post-count hidden">
+                            <span id="right-count">0</span>
+                            <span class="label">posts</span>
+                        </div>
+                        <div class="question-mark" id="right-question-mark">?</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Leaderboard -->
+            <div id="sidebar-leaderboard" class="sidebar-leaderboard" style="display: none;">
+                <div class="sidebar-leaderboard-header">
+                    <h3>Chat Leaderboard</h3>
+                    <button id="sidebar-reset-leaderboard-btn" class="btn secondary tiny" title="Reset Leaderboard">Reset</button>
+                </div>
+                <div id="sidebar-twitch-leaderboard" class="sidebar-twitch-leaderboard">
+                    <div class="leaderboard-empty">No participants yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Overlay -->
+        <div id="result-overlay" class="result-overlay" style="display: none;">
+            <div class="result-content">
+                <h2 id="result-text" class="result-text">Correct!</h2>
+                <div id="result-stats" class="result-stats">
+                    <p>Your streak: <span id="current-streak">0</span></p>
+                    <p>Best streak: <span id="best-streak-result">0</span></p>
+                </div>
+                <div class="result-buttons">
+                    <button id="next-btn" class="btn primary">Next Round</button>
+                    <button id="retry-btn" class="btn secondary">Start Over</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Play Popup -->
+        <div id="how-to-play-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>How to Play</h2>
+                    <button id="close-popup" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p>Welcome to Rule34dle! Here's how to play:</p>
+                    <ul>
+                        <li>You'll see two characters or tags side by side</li>
+                        <li>The left side shows a character/tag with its post count</li>
+                        <li>The right side shows another character/tag with a hidden post count (?)</li>
+                        <li><strong>Your goal:</strong> Click on the character/tag you think has <strong>MORE posts</strong></li>
+                        <li>If you think the left character has more posts, click on the left card</li>
+                        <li>If you think the right character has more posts, click on the right card</li>
+                        <li>Try to build the longest streak possible!</li>
+                    </ul>
+                    <p>Good luck and have fun!</p>
+                </div>
+                <div class="popup-footer">
+                    <button id="got-it-btn" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Changelog Popup -->
+        <div id="changelog-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Changelog</h2>
+                    <button id="close-changelog-popup" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <div class="changelog-entry">
+                        <h3>Version 1.9 - September 14th, 2025</h3>
+                        <ul>
+                            <li><strong>AI Post toggle:</strong> Added a new toggle to stop AI results from being counted.</li>
+                            <li><strong>Twitch Integration:</strong> Twitch streamers can now connect their chat to the site, letting chat compete on who the better rule34dle player is!</li>
+                            <li>It even has a leaderboard!</li>
+                            <li>(I am continuously working on the site, but I tend to forget to write these changelogs which is why the gap between this one and the last is so big)</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry">
+                        <h3>Version 1.8 - August 17, 2025</h3>
+                        <ul>
+                            <li><strong>Daily Gamemode:</strong> Added a new daily gamemode inspired by Scrandle. 10 head to heads where you have to guess which tag has more posts.</li>
+                            <li><strong>Tag Notes:</strong> Slowly rolling out a note under each tag to tell you what universe/franchise each character is from.</li>
+                        </ul>
+                        <h3>Version 1.7 - August 16, 2025</h3>
+                        <ul>
+                            <li><strong>Franchise toggle:</strong> Added a new toggle to stop large franchise tags from showing up.</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry">
+                        <h3>Version 1.6 - August 15, 2025</h3>
+                        <ul>
+                            <li><strong>Image rollout:</strong> Images are slowly starting to roll out! It will take a while before everything gets an image, but the progress has started!</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-entry">
+                        <h3>Version 1.5 - August 15, 2025</h3>
+                        <ul>
+                            <li><strong>More Intuitive Gameplay:</strong> Click directly on the character you think has more posts!</li>
+                            <li><strong>Improved UI:</strong> Removed confusing "Higher/Lower" buttons</li>
+                            <li><strong>Updated Tutorial:</strong> Hopefully more clear instructions</li>
+                            <li><strong>Report System:</strong> Press the red button in the corner to submit feedback</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="popup-footer">
+                    <button id="close-changelog-btn" class="btn primary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Franchise Info Popup -->
+        <div id="franchise-info-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Franchise Filter</h2>
+                    <button id="close-franchise-info" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p><strong>What does "Include franchises" mean?</strong></p>
+                    <p>This toggle controls whether the game includes broad franchise tags or focuses on specific characters.</p>
+
+                    <h4>When enabled (default):</h4>
+                    <ul>
+                        <li>Shows both individual characters and franchise tags</li>
+                        <li>Examples: "Minecraft", "Pokémon", "One Piece"</li>
+                        <li>These represent entire franchises with many characters</li>
+                    </ul>
+
+                    <h4>When disabled:</h4>
+                    <ul>
+                        <li>Shows only specific individual characters</li>
+                        <li>Examples: "Pikachu", "Princess Peach", "Nami"</li>
+                        <li>Filters out the broad franchise categories</li>
+                    </ul>
+
+                    <p><em>Loading screen ahh tooltip: Turn off franchise tags if you prefer comparing individual characters rather than entire franchises!</em></p>
+                </div>
+                <div class="popup-footer">
+                    <button id="franchise-info-got-it" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Filter Info Popup -->
+        <div id="ai-info-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>AI Filter</h2>
+                    <button id="close-ai-info" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p><strong>What does "Remove AI results" mean?</strong></p>
+                    <p>This toggle controls whether the game includes AI-generated posts in the character counts.</p>
+
+                    <h4>When enabled:</h4>
+                    <ul>
+                        <li>Shows character post counts with AI posts excluded</li>
+                        <li>Only counts human-created artwork and content</li>
+                        <li>Provides a more "traditional" view of character popularity</li>
+                    </ul>
+
+                    <h4>When disabled (default):</h4>
+                    <ul>
+                        <li>Shows total post counts including AI-generated content</li>
+                        <li>Reflects the current state of the site</li>
+                        <li>Includes all types of posts</li>
+                    </ul>
+
+                    <p><em>Toggle this on if you want to see character popularity without AI influence!</em></p>
+                </div>
+                <div class="popup-footer">
+                    <button id="ai-info-got-it" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hard Mode Info Popup -->
+        <div id="hard-mode-info-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Hard Mode</h2>
+                    <button id="close-hard-mode-info" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p><strong>What is Hard Mode?</strong></p>
+                    <p>Hard Mode increases the difficulty by giving you three characters to choose from instead of two, and hiding all post counts!</p>
+
+                    <h4>When enabled:</h4>
+                    <ul>
+                        <li>Shows three characters side by side</li>
+                        <li>All post counts are hidden</li>
+                        <li>Characters are somewhat balanced to avoid extreme differences</li>
+                    </ul>
+
+                    <p><em>We love choosing between three things!</em></p>
+                </div>
+                <div class="popup-footer">
+                    <button id="hard-mode-info-got-it" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Chatter Standing Info Popup -->
+        <div id="last-chatter-info-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Last Chatter Standing</h2>
+                    <button id="close-last-chatter-info" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <p><strong>What is Last Chatter Standing?</strong></p>
+                    <p>An elimination-style game mode where chatters compete until only one remains!</p>
+
+                    <h4>How it works:</h4>
+                    <ul>
+                        <li>All chatters start as participants in the first round</li>
+                        <li>Vote by typing "1", "2" or "3" (for hard mode) in chat</li>
+                        <li>Wrong guesses or failing to vote eliminates you from the game</li>
+                        <li><strong>After the first round ends, no new participants can join.</strong></li>
+                        <li><strong>Reset the leaderboard to start a new round</strong></li>
+                        <li>Eliminated players are greyed out and cannot vote</li>
+                        <li>Game continues until 1 player remains or everyone is eliminated</li>
+                    </ul>
+
+                    <p><em>Tip: press the red X on a chatter to eliminate them, and the green button to revive them!</em></p>
+                </div>
+                <div class="popup-footer">
+                    <button id="last-chatter-info-got-it" class="btn primary">Got it!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Popup -->
+        <div id="settings-popup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Settings</h2>
+                    <button id="close-settings" class="close-popup">×</button>
+                </div>
+                <div class="popup-body">
+                    <div class="settings-section">
+                        <h3>Twitch Integration</h3>
+                        <p>Connect your Twitch account to enable chat voting. Viewers can type "1" or "2" in chat to vote for their choice!</p>
+
+                        <!-- New voting feature notification -->
+                        <div class="twitch-new-feature">
+                            <span class="new-badge">New:</span>
+                            Chatters can now also type "one", "two", and "three" as well as 1, 2, and 3!
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="twitch-integration-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Enable Twitch Integration</span>
+                        </div>
+
+                        <div id="twitch-connection-section" class="twitch-connection" style="display: none;">
+                            <div id="twitch-connect-container" class="twitch-connect">
+                                <button id="twitch-connect-btn" class="btn primary twitch-btn">
+                                    <span class="twitch-icon"></span>
+                                    Connect to Twitch
+                                </button>
+                                <p class="twitch-note">You'll be redirected to Twitch to authorize the connection.</p>
+                            </div>
+
+                            <div id="twitch-connected-container" class="twitch-connected" style="display: none;">
+                                <div class="twitch-status">
+                                    <span class="status-icon">✅</span>
+                                    <span>Connected to Twitch as <strong id="twitch-username"></strong></span>
+                                </div>
+                                <p class="twitch-auto-note">Automatically monitoring your own channel's chat for votes!</p>
+
+                                <div class="setting-item">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="streamer-leaderboard-toggle">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span class="toggle-label">Include Streamer on Leaderboard</span>
+                                </div>
+
+                                <button id="twitch-disconnect-btn" class="btn secondary">Disconnect from Twitch</button>
+                            </div>
+                        </div>
+                        <div class="twitch-legend">
+                            <h4>Leaderboard Icons:</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <span class="vote-indicator">●</span>
+                                    <span>User has voted this round</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="result-indicator correct">✓</span>
+                                    <span>User voted correctly last round</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="result-indicator incorrect">✗</span>
+                                    <span>User voted incorrectly last round</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p><em>Huge thanks to portal on discord for this fantastic idea!</em></p>
+                    </div>
+                </div>
+                <div class="popup-footer">
+                    <button id="settings-close-btn" class="btn primary">Close</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <p>Made by <a href="https://reddit.com/u/DandelionGaming" target="_blank">u/DandelionGaming</a> / <a href="https://x.com/DryIcedMatcha" target="_blank">DryIcedMatcha on Twitter</a> / <span class="developer-footer">anderscool2</span> on Twitch</p>
+        <p>Original idea by <a href="https://reddit.com/u/PensAndEndorsement" target="_blank">u/PensAndEndorsement</a> on the <a href="https://www.reddit.com/r/northernlion/comments/1mpi34q/came_up_with_some_new_dles_am_i_cooking_or_am_i/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button" target="_blank">Northernlion Subreddit</a></p>
+        <script type='text/javascript' src='../storage.ko-fi.com/cdn/widget/Widget_2.js'></script><script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'Z8Z11JX1QO');kofiwidget2.draw();</script>
+        <p><button id="changelog-btn" class="changelog-footer-btn">View Changelog</button></p>
+    </footer>
+
+    <!-- Report Problem Button -->
+    <button id="report-problem-btn" class="report-problem-btn">Report Problem</button>
+
+    <!-- Report Problem Popup -->
+    <div id="report-problem-popup" class="report-popup-overlay" style="display: none;">
+        <div class="report-popup-content">
+            <div class="report-popup-header">
+                <h3>Report a Problem</h3>
+                <button id="close-report-popup" class="close-popup">×</button>
+            </div>
+            <div class="report-subtext">
+                <p>Submit feedback, bugs or incorrect tag information here</p>
+            </div>
+            <form id="report-form" class="report-form">
+                <div class="form-group">
+                    <label for="report-title">Title*</label>
+                    <input type="text" id="report-title" name="title" required maxlength="100" placeholder="Brief description of the issue">
+                </div>
+                <div class="form-group">
+                    <label for="report-contact">Contact Info (optional)</label>
+                    <input type="text" id="report-contact" name="contact" maxlength="100" placeholder="If you want me to get back to you">
+                </div>
+                <div class="form-group">
+                    <label for="report-description">Description*</label>
+                    <textarea id="report-description" name="description" required maxlength="1000" rows="5" placeholder="Please describe the problem in detail..."></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" id="cancel-report" class="btn secondary">Cancel</button>
+                    <button type="submit" id="submit-report" class="btn primary">Submit Report</button>
+                </div>
+            </form>
+            <div id="report-status" class="report-status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Fake Site Warning Popup -->
+    <div id="fake-site-warning-popup" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="border: 3px solid #ff4444;">
+            <div class="popup-header" style="background-color: #ff4444; color: white;">
+                <h2>⚠️ Warning: Fake Site Detected</h2>
+                <button id="close-fake-site-warning" class="close-popup">×</button>
+            </div>
+            <div class="popup-body">
+                <p><strong>You were just redirected from an unauthorized fake website.</strong></p>
+                <p>The site you tried to visit was an <strong>AI-generated ripoff</strong> that stole the code for Rule34dle.</p>
+
+                <h4>Important Information:</h4>
+                <ul>
+                    <li><strong>Official Site:</strong> rule34dle.vercel.app (this site)</li>
+                    <li><strong>Fake Site:</strong> rule34dle.org (DO NOT USE)</li>
+                    <li><strong style="color: #ff4444;">rule34dle.org is a fake website that's stealing my code. Please spread the word!</strong></li>
+                    <li>The fake site may contain inaccurate data or malicious content</li>
+                    <li>Please bookmark this official site to avoid confusion</li>
+                </ul>
+            </div>
+            <div class="popup-footer">
+                <button id="fake-site-warning-ok" class="btn primary">Got it, thanks!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fake Site Referral Popup (Nicer warning for referrer visits) -->
+    <div id="fake-site-referral-popup" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="border: 3px solid #4a90e2;">
+            <div class="popup-header" style="background-color: #4a90e2; color: white;">
+                <h2>📢 Important Notice</h2>
+                <button id="close-fake-site-referral" class="close-popup">×</button>
+            </div>
+            <div class="popup-body">
+                <p><strong>We've noticed that you entered this site through a fraudulent website: rule34dle.org</strong></p>
+
+                <p>Rule34dle.org is a fake website that has been trying to steal my code and is impersonating the real site.</p>
+
+                <h4>Please help spread the word:</h4>
+                <ul>
+                    <li><strong style="color: #4a90e2;">Official Site:</strong> rule34dle.vercel.app (you are here now ✓)</li>
+                    <li><strong style="color: #ff4444;">Fake Site:</strong> rule34dle.org (please avoid this site)</li>
+                    <li>The fake site may contain outdated data or malicious content</li>
+                    <li>Please bookmark the official site: <strong>rule34dle.vercel.app</strong></li>
+                </ul>
+
+                <p><em>Thank you!</em></p>
+            </div>
+            <div class="popup-footer">
+                <button id="fake-site-referral-ok" class="btn primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Referrer Warning Popup -->
+    <div id="no-referrer-warning-popup" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="border: 3px solid #ffbb33;">
+            <div class="popup-header" style="background-color: #ffbb33; color: white;">
+                <h2>Welcome to Rule34dle! Quick PSA</h2>
+                <button id="close-no-referrer-warning" class="close-popup">×</button>
+            </div>
+            <div class="popup-body">
+                <p><strong>There's a fake site going around impersonating my site.</strong></p>
+                <p>You are seeing this message because there's a possibility you joined here from the fake site "rule34dle.org"</p>
+                <p><em>If you did not come here from the impersonator site then I'm sorry for the popup</em></p>
+
+                <h4>Please be aware of the following:</h4>
+                <ul>
+                    <li>Rule34dle.org is a <strong>fake</strong>, AI generated impersonator site that is trying to steal my game and take credit for it.
+                    <li>They have tried directly stealing my game, putting their ads on it to farm money from months of my hard work, leaving me with all the expensive database costs</li>
+                    <li>I am a solo dev fresh out of uni working on this as a passion project, so I can't afford to keep this site running if they steal all the ad revenue</li>
+                    <li>Consider bookmarking the official site to avoid future confusion</li>
+                    <li><strong style="color: #008000;">Official Site:</strong> rule34dle.vercel.app (this site)</li>
+                    <li><strong style="color: #ff4444;">Fake Site:</strong> rule34dle.org (DO NOT USE)</li>
+                </ul>
+
+                <p><em>Thank you for helping me combat the fake sites! Please help spread the word</em></p>
+            </div>
+            <div class="popup-footer">
+                <button id="no-referrer-warning-ok" class="btn primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="twitch-integration.js"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+</body>
+
+<!-- Mirrored from rule34dle.vercel.app/ by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 29 Jul 2026 20:33:36 GMT -->
+</html>
