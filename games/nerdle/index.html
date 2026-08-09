@@ -15,8 +15,10 @@
 <div class="game-shell">
   <div class="game-header">
     <h1>Nerdle</h1>
-    <p>Guess the equation in 6 tries. Every row must be true math.</p>
+    <p id="mode-desc">Guess the equation in 6 tries. Every row must be true math.</p>
   </div>
+
+  <div class="mode-select" id="mode-select" role="tablist" aria-label="Nerdle mode"></div>
 
   <div id="status" class="status-msg" role="status" aria-live="polite"></div>
 
@@ -30,3 +32,4 @@
 <script src="game.js?v=2"></script>
 </body>
 </html>
+
