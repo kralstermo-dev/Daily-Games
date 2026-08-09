@@ -1,28 +1,23 @@
 // ============================================================
 // NERDLE — guess today's equation
-// Two modes:
-//  - Normal: fixed format NN[op]NN=NN (always 8 chars), one operator,
-//    e.g. "12+07=19".
-//  - Hard: A op B op C = DE (also 8 chars), TWO operators, evaluated
-//    with standard order of operations (* and / before + and -).
-// Both are fixed-position formats — that trades away real Nerdle's
-// fully variable-length terms for reliable validation/scoring — but
-// hard mode still lets you use two operators in one equation, unlike
-// normal mode.
+// Simplified fixed format: NN[op]NN=NN (always 8 characters),
+// e.g. "12+07=19". This trades away real Nerdle's variable-length
+// terms for reliable validation/scoring — still uses the same
+// green/right-spot, yellow/wrong-spot, gray/not-in-equation rules.
 // ============================================================
 
 const EQ_LENGTH = 8;
 const MAX_GUESSES = 6;
 const OPERATORS = ["+", "-", "*", "/"];
-const MODE_STORAGE_KEY = "nerdle-mode";
 
 function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
-// ---------- NORMAL MODE: NN[op]NN=NN ----------
-
-function buildNormalPool() {
+// Builds every valid equation in this fixed format, deterministically
+// (no randomness) so the same list — and therefore the same day's
+// answer — comes out identical for every player.
+function buildEquationPool() {
   const pool = [];
   for (let a = 1; a <= 99; a++) {
     for (const op of OPERATORS) {
@@ -43,10 +38,19 @@ function buildNormalPool() {
   return pool;
 }
 
-const NORMAL_RE = /^(\d{2})([+\-*/])(\d{2})=(\d{2})$/;
+const EQUATION_POOL = buildEquationPool();
 
-function isValidNormal(str) {
-  const m = str.match(NORMAL_RE);
+function getTodaysEquation() {
+  const start = new Date(2024, 0, 1);
+  const today = new Date();
+  const dayIndex = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 91;
+  return EQUATION_POOL[dayIndex % EQUATION_POOL.length];
+}
+
+const EQUATION_RE = /^(\d{2})([+\-*/])(\d{2})=(\d{2})$/;
+
+function isValidEquation(str) {
+  const m = str.match(EQUATION_RE);
   if (!m) return false;
   const a = parseInt(m[1], 10);
   const op = m[2];
@@ -64,110 +68,17 @@ function isValidNormal(str) {
   return expected === result;
 }
 
-// ---------- HARD MODE: A op B op C = DE (two operators) ----------
-
-function precedence(op) {
-  return (op === "*" || op === "/") ? 2 : 1;
-}
-
-// Evaluates a op1 b op2 c respecting standard order of operations
-// (multiplication/division before addition/subtraction). Returns null
-// for invalid operations (division by zero or non-integer division).
-function applyOp(x, op, y) {
-  if (op === "+") return x + y;
-  if (op === "-") return x - y;
-  if (op === "*") return x * y;
-  return (y !== 0 && x % y === 0) ? x / y : null; // division
-}
-
-function evalTwoOp(a, op1, b, op2, c) {
-  if (precedence(op1) >= precedence(op2)) {
-    const left = applyOp(a, op1, b);
-    if (left === null) return null;
-    return applyOp(left, op2, c);
-  } else {
-    const right = applyOp(b, op2, c);
-    if (right === null) return null;
-    return applyOp(a, op1, right);
-  }
-}
-
-function buildHardPool() {
-  const pool = [];
-  for (let a = 0; a <= 9; a++) {
-    for (const op1 of OPERATORS) {
-      for (let b = 0; b <= 9; b++) {
-        for (const op2 of OPERATORS) {
-          for (let c = 0; c <= 9; c++) {
-            if ([a, b, c].filter(n => n === 0).length >= 2) continue; // skip overly trivial equations
-            const result = evalTwoOp(a, op1, b, op2, c);
-            if (result === null || result < 0 || result > 99) continue;
-            pool.push(`${a}${op1}${b}${op2}${c}=${pad2(result)}`);
-          }
-        }
-      }
-    }
-  }
-  return pool;
-}
-
-const HARD_RE = /^(\d)([+\-*/])(\d)([+\-*/])(\d)=(\d{2})$/;
-
-function isValidHard(str) {
-  const m = str.match(HARD_RE);
-  if (!m) return false;
-  const a = parseInt(m[1], 10);
-  const op1 = m[2];
-  const b = parseInt(m[3], 10);
-  const op2 = m[4];
-  const c = parseInt(m[5], 10);
-  const result = parseInt(m[6], 10);
-  const expected = evalTwoOp(a, op1, b, op2, c);
-  return expected !== null && expected === result;
-}
-
-// ---------- MODE CONFIG ----------
-
-const MODES = {
-  normal: {
-    label: "Normal",
-    desc: "Guess the equation in 6 tries. One operator, e.g. 12+07=19.",
-    pool: buildNormalPool(),
-    isValid: isValidNormal,
-    dayOffset: 91,
-  },
-  hard: {
-    label: "Hard",
-    desc: "Guess the equation in 6 tries. Two operators — normal math order applies.",
-    pool: buildHardPool(),
-    isValid: isValidHard,
-    dayOffset: 158,
-  },
-};
-
-function getTodaysEquation(modeId) {
-  const mode = MODES[modeId];
-  const start = new Date(2024, 0, 1);
-  const today = new Date();
-  const dayIndex = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + mode.dayOffset;
-  return mode.pool[dayIndex % mode.pool.length];
-}
-
 const state = {
-  mode: (localStorage.getItem(MODE_STORAGE_KEY) === "hard") ? "hard" : "normal",
-  answer: null,
+  answer: getTodaysEquation(),
   row: 0,
   col: 0,
   guesses: Array.from({ length: MAX_GUESSES }, () => Array(EQ_LENGTH).fill("")),
   gameOver: false,
 };
-state.answer = getTodaysEquation(state.mode);
 
 const gridEl = document.getElementById("grid");
 const statusEl = document.getElementById("status");
 const playAgainBtn = document.getElementById("play-again");
-const modeSelectEl = document.getElementById("mode-select");
-const modeDescEl = document.getElementById("mode-desc");
 
 function buildGrid() {
   gridEl.innerHTML = "";
@@ -268,7 +179,7 @@ function submitGuess() {
 
   const guess = state.guesses[state.row].join("");
 
-  if (!MODES[state.mode].isValid(guess)) {
+  if (!isValidEquation(guess)) {
     showStatus("Not a valid equation", true);
     shake(state.row);
     return;
@@ -355,40 +266,8 @@ document.addEventListener("keydown", (e) => {
   else if (/^[0-9+\-*/]$/.test(key)) handleKey(key);
 });
 
-playAgainBtn.addEventListener("click", () => resetRound(true));
-
-function buildModeSelector() {
-  modeSelectEl.innerHTML = Object.entries(MODES).map(([id, m]) =>
-    `<button class="mode-btn${id === state.mode ? " active" : ""}" data-mode="${id}" role="tab" aria-selected="${id === state.mode}">${m.label}</button>`
-  ).join("");
-
-  modeSelectEl.querySelectorAll(".mode-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      if (btn.dataset.mode === state.mode) return;
-      state.mode = btn.dataset.mode;
-      localStorage.setItem(MODE_STORAGE_KEY, state.mode);
-      resetRound(false); // fresh round in the new mode, using today's equation for it
-    });
-  });
-}
-
-function applyModeUI() {
-  modeSelectEl.querySelectorAll(".mode-btn").forEach(btn => {
-    const active = btn.dataset.mode === state.mode;
-    btn.classList.toggle("active", active);
-    btn.setAttribute("aria-selected", active);
-  });
-  modeDescEl.textContent = MODES[state.mode].desc;
-}
-
-// random=true picks a random equation (the "play again" button);
-// random=false picks today's equation for whichever mode is now active
-// (used right after switching modes).
-function resetRound(random) {
-  const pool = MODES[state.mode].pool;
-  state.answer = random
-    ? pool[Math.floor(Math.random() * pool.length)]
-    : getTodaysEquation(state.mode);
+playAgainBtn.addEventListener("click", () => {
+  state.answer = EQUATION_POOL[Math.floor(Math.random() * EQUATION_POOL.length)];
   state.row = 0;
   state.col = 0;
   state.gameOver = false;
@@ -397,13 +276,5 @@ function resetRound(random) {
   document.querySelectorAll(".key").forEach(k => k.classList.remove("correct", "present", "absent"));
   playAgainBtn.classList.remove("show");
   showStatus("");
-  applyModeUI();
   buildGrid();
-}
-
-try {
-  buildModeSelector();
-  applyModeUI();
-} catch (err) {
-  console.error("Nerdle mode setup failed:", err);
-}
+});

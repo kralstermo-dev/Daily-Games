@@ -1,7 +1,4 @@
-// A small curated list of common 5-letter answers.
-// The game picks one deterministically based on today's date,
-// so everyone gets the same word on the same day (like the real Wordle).
-// Add more words any time — just keep them lowercase, 5 letters.
+// Words must be lowercase, 5 letters.
 const ANSWER_WORDS = [
   "about","above","actor","adapt","alarm","alert","allow","alone","amber","angle",
   "apple","apply","arise","aside","await","award","aware","badge","baker","basic",
