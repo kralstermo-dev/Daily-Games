@@ -18,7 +18,13 @@
     <p>Which character has more posts on Rule 34? Click the one you think is higher.</p>
   </div>
 
+  <div class="r34-mode-bar">
+    <button type="button" class="r34-mode active" data-mode="daily" id="mode-daily">Daily</button>
+    <button type="button" class="r34-mode" data-mode="endless" id="mode-endless">Endless</button>
+  </div>
+
   <div class="r34-stats">
+    <span id="round-label">Round <strong id="round">1</strong></span>
     <span>Streak: <strong id="streak">0</strong></span>
     <span>Best: <strong id="best">0</strong></span>
   </div>
@@ -30,10 +36,11 @@
   </div>
 
   <button id="next-btn" class="play-again">Next pair</button>
+  <button id="share-btn" class="play-again r34-share" style="display:none">Share result</button>
 
   <p class="r34-note">
-    Counts are approximate snapshots (not live). No images are shown — names only.
-    True live API needs a proxy because of CORS + required API keys.
+    Counts are approximate snapshots. Images are SFW letter avatars (or optional public art links).
+    Daily mode uses the same pairs for everyone on the same calendar day.
   </p>
 </div>
 

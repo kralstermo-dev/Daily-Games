@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wordle | Daily Games</title>
+<title>Nerdle | Daily Games</title>
 <link rel="stylesheet" href="../../styles/main.css?v=2">
 </head>
 <body>
@@ -14,20 +14,21 @@
 
 <div class="game-shell">
   <div class="game-header">
-    <h1>Wordle</h1>
-    <p>Guess the 5-letter word in 6 tries.</p>
+    <h1>Nerdle</h1>
+    <p id="mode-desc">Guess the equation in 6 tries. Every row must be true math.</p>
   </div>
+
+  <div class="mode-select" id="mode-select" role="tablist" aria-label="Nerdle mode"></div>
 
   <div id="status" class="status-msg" role="status" aria-live="polite"></div>
 
-  <div id="grid" class="grid"></div>
+  <div id="grid" class="grid nerdle-grid"></div>
 
-  <button id="play-again" class="play-again">Play a random word</button>
+  <button id="play-again" class="play-again">Play a random equation</button>
 
-  <div id="keyboard" class="keyboard" style="margin-top: 18px;"></div>
+  <div id="keyboard" class="keyboard nerdle-keyboard" style="margin-top: 18px;"></div>
 </div>
 
-<script src="words.js?v=2"></script>
 <script src="game.js?v=2"></script>
 </body>
 </html>

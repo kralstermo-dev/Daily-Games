@@ -14,6 +14,8 @@
   --accent-2: #5fa8a0;    /* muted teal — "close" */
   --line: #333844;
   --danger: #c96a4f;
+  --correct: #5fb87a;     /* green — right letter, right spot (Wordle, Nerdle, etc.) */
+  --present: #e3c04c;     /* yellow — right letter, wrong spot */
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
@@ -226,6 +228,32 @@ button:focus-visible,
   margin: 0 0 24px;
 }
 
+.game-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.icon-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink-dim);
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.icon-btn:hover { color: var(--ink); border-color: var(--accent); }
+
 .grid {
   display: grid;
   grid-template-rows: repeat(6, 1fr);
@@ -259,12 +287,22 @@ button:focus-visible,
 .cell.filled { border-color: #565c6b; }
 .cell.pop { transform: scale(1.06); }
 
-.cell.correct { background: var(--accent); border-color: var(--accent); color: #14171c; }
-.cell.present { background: var(--accent-2); border-color: var(--accent-2); color: #14171c; }
+.cell.correct { background: var(--correct); border-color: var(--correct); color: #14171c; }
+.cell.present { background: var(--present); border-color: var(--present); color: #14171c; }
 .cell.absent  { background: #2a2e38; border-color: #2a2e38; color: var(--ink-dim); }
 
 .cell.flip {
   animation: flip 0.45s ease-in both;
+}
+
+.nerdle-grid {
+  width: min(400px, 94vw);
+}
+.nerdle-grid .grid-row {
+  grid-template-columns: repeat(8, 1fr);
+}
+.nerdle-grid .cell {
+  font-size: 18px;
 }
 
 .keyboard {
@@ -296,8 +334,8 @@ button:focus-visible,
 .key:hover { background: #2c3140; }
 .key.wide { min-width: 54px; font-size: 11px; }
 
-.key.correct { background: var(--accent); color: #14171c; }
-.key.present { background: var(--accent-2); color: #14171c; }
+.key.correct { background: var(--correct); color: #14171c; }
+.key.present { background: var(--present); color: #14171c; }
 .key.absent  { background: #22252d; color: var(--ink-dim); }
 
 .status-msg {
@@ -340,6 +378,34 @@ button:focus-visible,
   background: var(--bg-panel);
 }
 
+.mode-select {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 18px;
+}
+
+.mode-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink-dim);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mode-btn:hover { color: var(--ink); }
+.mode-btn.active { background: var(--accent); color: #14171c; }
+
+.flag-viewport.mystery img { opacity: 0; }
+
 .flag-viewport img {
   position: absolute;
   top: var(--oy, 50%);
@@ -361,10 +427,17 @@ button:focus-visible,
   display: flex;
   gap: 8px;
   margin-bottom: 18px;
+  align-items: flex-start;
 }
 
-.guess-form input {
+.autocomplete {
+  position: relative;
   flex: 1;
+  text-align: left;
+}
+
+.autocomplete input {
+  width: 100%;
   background: var(--bg-panel);
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -373,7 +446,49 @@ button:focus-visible,
   font-family: var(--font-body);
   font-size: 14px;
 }
-.guess-form input:focus-visible { outline: 2px solid var(--accent); }
+.autocomplete input:focus-visible { outline: 2px solid var(--accent); }
+
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.autocomplete-list.hidden { display: none; }
+
+.autocomplete-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.autocomplete-option:hover,
+.autocomplete-option.active { background: var(--bg-panel-hover); }
+
+.ac-flag-wrap {
+  display: block;
+  width: 24px;
+  height: 16px;
+  overflow: hidden;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.autocomplete-flag {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .guess-form button {
   background: var(--accent);
@@ -385,7 +500,43 @@ button:focus-visible,
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 13px;
+  height: 41px;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
+
+.settings-panel {
+  text-align: left;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
+}
+.settings-panel.hidden { display: none; }
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--ink-dim);
+}
+
+.win-badge {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent-2) 25%, var(--bg-panel));
+  color: var(--accent-2);
+  border: 1px solid var(--accent-2);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+.win-badge.hidden { display: none; }
 
 .guess-list {
   display: flex;
@@ -396,7 +547,7 @@ button:focus-visible,
 
 .flagle-row {
   display: grid;
-  grid-template-columns: 40px 1fr auto auto auto;
+  grid-template-columns: 40px 1fr auto auto;
   align-items: center;
   gap: 10px;
   background: var(--bg-panel);
@@ -426,6 +577,40 @@ button:focus-visible,
   font-family: var(--font-mono);
   color: var(--accent);
   font-weight: 700;
+}
+
+/* Color Match mode guess rows: name / % / masked flag icon — see cm-mode below */
+.flagle-row.cm-mode {
+  grid-template-columns: 1fr auto 44px;
+}
+
+.cm-pct {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--ink-dim);
+}
+
+.cm-icon-wrap {
+  display: block;
+  width: 40px;
+  height: 27px;
+  overflow: hidden;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel);
+  flex-shrink: 0;
+}
+
+.cm-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.flagle-row.cm-mode.correct .flagle-name,
+.flagle-row.cm-mode.correct .cm-pct {
+  color: var(--accent-2);
 }
 
 
