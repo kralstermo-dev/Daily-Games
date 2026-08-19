@@ -3,87 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Games | a shelf of daily puzzles</title>
-<link rel="stylesheet" href="styles/main.css?v=3">
+<title>Home</title>
+<link rel="stylesheet" href="styles/main.css?v=5">
 </head>
 <body>
 
 <div class="wrap">
   <header class="hero">
-    <h1 class="tile-title" aria-label="Daily Games">
-      <span class="tile gray" style="--delay:0.0s">D</span>
-      <span class="tile gray" style="--delay:0.1s">A</span>
-      <span class="tile teal" style="--delay:0.2s">I</span>
-      <span class="tile gold" style="--delay:0.3s">L</span>
-      <span class="tile gold" style="--delay:0.4s">Y</span>
-    </h1>
+    <!--
+      TODO: pick a real site name and swap it in below — I left it as
+      plain text on purpose since we don't have a name yet. Once you've
+      got one, I can also give it the same flip-tile treatment as the
+      "DAILY" title on the Daily Games page if you want.
+    -->
+    <h1 class="site-name">Your Name Here</h1>
     <p class="tagline">
-      A little shelf of daily guessing games — words, flags, colors, and more.
-      Pick a ticket below to play.
+      <!-- TODO: a line or two about you — whatever you want visitors to see first. -->
+      A short description about you goes here. Swap this out for whatever
+      you'd like people to know when they land on the site.
     </p>
   </header>
 
   <main>
     <div class="shelf">
 
-      <a class="ticket live" href="games/wordle/index.html">
-        <span class="ticket-eyebrow">Word Guessing</span>
-        <h2 class="ticket-name">Wordle</h2>
-        <p class="ticket-desc">Guess the 5-letter word in 6 tries. Green means right spot, teal means wrong spot.</p>
-        <div class="mini-grid" aria-hidden="true">
-          <span class="mini-cell gray"></span>
-          <span class="mini-cell teal"></span>
-          <span class="mini-cell gray"></span>
-          <span class="mini-cell gold"></span>
-          <span class="mini-cell gold"></span>
-        </div>
-      </a>
-
-      <a class="ticket live" href="games/flagle/index.html">
-        <span class="ticket-eyebrow">Geography</span>
-        <h2 class="ticket-name">Flagle</h2>
-        <p class="ticket-desc">Guess the country from its flag, zoomed in. Distance &amp; direction hints on every guess.</p>
-        <div class="mini-grid" aria-hidden="true">
-          <span class="mini-cell teal"></span>
-          <span class="mini-cell gray"></span>
-          <span class="mini-cell gray"></span>
-        </div>
-      </a>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Colorfle</h2>
-        <p class="ticket-desc">Guess the hex color code.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Contexto</h2>
-        <p class="ticket-desc">Guess the secret word by semantic closeness.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Conexo</h2>
-        <p class="ticket-desc">Contexto's Spanish-language cousin.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Globle</h2>
-        <p class="ticket-desc">Guess the country, heatmap-style, by distance.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Globle: Capitals</h2>
-        <p class="ticket-desc">Globle, but guessing capital cities.</p>
-      </div>
-
-      <a class="ticket live" href="games/nerdle/index.html">
-        <span class="ticket-eyebrow">Math</span>
-        <h2 class="ticket-name">Nerdle</h2>
-        <p class="ticket-desc">Wordle, but the answer is a math equation. Green means right spot, yellow means wrong spot.</p>
+      <a class="ticket live" href="daily-games/index.html">
+        <span class="ticket-eyebrow">Play</span>
+        <h2 class="ticket-name">Daily Games</h2>
+        <p class="ticket-desc">A shelf of daily word, flag, and number guessing games.</p>
         <div class="mini-grid" aria-hidden="true">
           <span class="mini-cell gray"></span>
           <span class="mini-cell teal"></span>
@@ -92,46 +39,23 @@
         </div>
       </a>
 
-      <div class="ticket soon" aria-disabled="true">
+      <a class="ticket soon" href="mc-tools/index.html">
         <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Letterle</h2>
-        <p class="ticket-desc">Guess the single secret letter. Only 26 possible answers.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Waffle</h2>
-        <p class="ticket-desc">Swap letters in a waffle-shaped grid to solve 6 words at once.</p>
-      </div>
-
-      <a class="ticket soon" href="games/rule34dle/index.html">
-        <span class="ticket-eyebrow">In Progress</span>
-        <h2 class="ticket-name">Rule34dle</h2>
-        <p class="ticket-desc">Guess which character has more posts on Rule 34. Build a streak.</p>
-        <div class="mini-grid" aria-hidden="true">
-          <span class="mini-cell gold"></span>
-          <span class="mini-cell gray"></span>
-          <span class="mini-cell teal"></span>
-        </div>
+        <h2 class="ticket-name">MC Tools</h2>
+        <p class="ticket-desc">Minecraft calculators, converters, and other utilities.</p>
       </a>
 
-      <div class="ticket soon" aria-disabled="true">
+      <a class="ticket soon" href="general-tools/index.html">
         <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Angle</h2>
-        <p class="ticket-desc">Guess the angle in degrees.</p>
-      </div>
+        <h2 class="ticket-name">General Tools</h2>
+        <p class="ticket-desc">General-purpose calculators, converters, and utilities.</p>
+      </a>
 
-      <div class="ticket soon" aria-disabled="true">
+      <a class="ticket soon" href="geo/index.html">
         <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Cutle</h2>
-        <p class="ticket-desc">Try to slice a shape exactly in half.</p>
-      </div>
-
-      <div class="ticket soon" aria-disabled="true">
-        <span class="ticket-eyebrow">Coming soon</span>
-        <h2 class="ticket-name">Toon Tone</h2>
-        <p class="ticket-desc">Guess the cartoon from a single frame.</p>
-      </div>
+        <h2 class="ticket-name">Geo</h2>
+        <p class="ticket-desc">Geography tools and references.</p>
+      </a>
 
     </div>
   </main>

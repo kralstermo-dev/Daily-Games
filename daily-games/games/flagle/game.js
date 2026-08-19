@@ -62,14 +62,52 @@ function bearingDeg(a, b) {
   return (toDeg(Math.atan2(y, x)) + 360) % 360;
 }
 
-function loadImage(url) {
+function loadImage(url, fallbackUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = "anonymous"; // required so canvas can read pixels back out
     img.onload = () => resolve(img);
-    img.onerror = reject;
+    img.onerror = () => {
+      if (fallbackUrl) {
+        img.onerror = () => reject(new Error(`Failed to load image (local and fallback both failed): ${url}`));
+        img.src = fallbackUrl;
+      } else {
+        reject(new Error(`Failed to load image: ${url}`));
+      }
+    };
     img.src = url;
   });
+}
+
+// ============================================================
+// FLAG IMAGE SOURCES
+// Every flag is tried locally first (games/flagle/flags/<code>.png), which
+// you can populate with your own images — handy for flags whose real aspect
+// ratio (Nepal's pennant shape, Switzerland/Vatican's square, etc.) doesn't
+// sit well cropped into our rectangular boxes. Any country without a local
+// file just falls back to flagcdn.com automatically, so nothing breaks
+// while the flags/ folder is empty or only partially filled in.
+// ============================================================
+
+const LOCAL_FLAGS_DIR = "flags";
+
+function flagLocalUrl(code) {
+  return `${LOCAL_FLAGS_DIR}/${code}.png`;
+}
+function flagCdnUrl(code, sizePx) {
+  return `https://flagcdn.com/w${sizePx}/${code}.png`;
+}
+// Inline fallback for <img> tags built via template strings.
+function flagOnerrorAttr(code, sizePx) {
+  return `this.onerror=null;this.src='${flagCdnUrl(code, sizePx)}'`;
+}
+// For <img> elements set via JS (not a template string).
+function setImgWithFallback(imgEl, code, sizePx) {
+  imgEl.onerror = () => {
+    imgEl.onerror = null;
+    imgEl.src = flagCdnUrl(code, sizePx);
+  };
+  imgEl.src = flagLocalUrl(code);
 }
 
 // ============================================================
@@ -221,7 +259,7 @@ function applyModeUI() {
     flagViewport.classList.add("mystery"); // blank until the first guess reveals something
   } else {
     flagViewport.classList.remove("mystery");
-    flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`;
+    setImgWithFallback(flagImg, state.answer.code, 320);
     updateZoom();
   }
 }
@@ -232,7 +270,7 @@ function applyModeUI() {
 
 function setup() {
   flagImg.crossOrigin = "anonymous";
-  state.answerImgPromise = loadImage(`https://flagcdn.com/w320/${state.answer.code}.png`);
+  state.answerImgPromise = loadImage(flagLocalUrl(state.answer.code), flagCdnUrl(state.answer.code, 320));
   state.revealedMask = new Uint8Array(REVEAL_W * REVEAL_H); // nothing discovered yet this round
 
   const h = hashString(state.answer.code);
@@ -300,14 +338,14 @@ async function fillColorMatchRow(row, country, isCorrect) {
 
   if (isCorrect) {
     pctEl.textContent = "100.0%";
-    iconEl.src = `https://flagcdn.com/w80/${country.code}.png`;
+    setImgWithFallback(iconEl, country.code, 80);
     return;
   }
 
   try {
     const [answerImg, guessImg] = await Promise.all([
       state.answerImgPromise,
-      loadImage(`https://flagcdn.com/w320/${country.code}.png`),
+      loadImage(flagLocalUrl(country.code), flagCdnUrl(country.code, 320)),
     ]);
     const { pct, canvas, matchedMask } = pixelMatchRender(guessImg, answerImg, REVEAL_W, REVEAL_H);
     const dataUrl = canvas.toDataURL();
@@ -356,7 +394,7 @@ function renderGuess(country, isCorrect) {
 
   if (isCorrect) {
     row.innerHTML = `
-      <img class="flagle-thumb" src="https://flagcdn.com/w80/${country.code}.png" alt="">
+      <img class="flagle-thumb" src="${flagLocalUrl(country.code)}" onerror="${flagOnerrorAttr(country.code, 80)}" alt="">
       <span class="flagle-name">${country.name}</span>
       <span class="flagle-correct">Correct! 🎉</span>
     `;
@@ -368,7 +406,7 @@ function renderGuess(country, isCorrect) {
   const km = distanceKm(country, state.answer);
   const deg = bearingDeg(country, state.answer);
   row.innerHTML = `
-    <img class="flagle-thumb" src="https://flagcdn.com/w80/${country.code}.png" alt="">
+    <img class="flagle-thumb" src="${flagLocalUrl(country.code)}" onerror="${flagOnerrorAttr(country.code, 80)}" alt="">
     <span class="flagle-name">${country.name}</span>
     <span class="flagle-arrow" title="direction">${arrowSvg(deg)}</span>
     <span class="flagle-dist">${km.toLocaleString()} km</span>
@@ -432,7 +470,7 @@ function endGame(won) {
     showStatus(won ? "Solved! 🎉" : `The flag was ${state.answer.name}`);
   } else {
     flagViewport.classList.remove("mystery");
-    flagImg.src = `https://flagcdn.com/w320/${state.answer.code}.png`; // full, unmasked reveal
+    setImgWithFallback(flagImg, state.answer.code, 320); // full, unmasked reveal
     if (won) {
       winBadgeEl.classList.remove("hidden");
     } else {
@@ -480,7 +518,7 @@ function renderAutocompleteOptions(query) {
 
   autocompleteList.innerHTML = currentOptions.map((c, i) => `
     <div class="autocomplete-option" data-index="${i}">
-      ${showFlagsInList ? `<span class="ac-flag-wrap"><img class="autocomplete-flag" src="https://flagcdn.com/w40/${c.code}.png" alt=""></span>` : ""}
+      ${showFlagsInList ? `<span class="ac-flag-wrap"><img class="autocomplete-flag" src="${flagLocalUrl(c.code)}" onerror="${flagOnerrorAttr(c.code, 40)}" alt=""></span>` : ""}
       <span>${c.name}</span>
     </div>
   `).join("");

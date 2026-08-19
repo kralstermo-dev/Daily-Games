@@ -20,10 +20,65 @@ function pad2(n) {
   return String(n).padStart(2, "0");
 }
 
-// ---------- NORMAL MODE: NN[op]NN=NN ----------
+// ---------- GENERAL EQUATION VALIDATION (used for GUESSES in both modes) ----------
+// A guess just needs to be a true, 8-character equation — it doesn't have to
+// match the answer's exact shape (e.g. "12+34=46" is valid even in Hard mode,
+// which only generates two-operator ANSWERS but never required two-operator
+// GUESSES). Supports any number of +,-,*,/ terms with standard precedence.
+
+function evaluateExpression(left) {
+  const tokens = left.match(/\d+|[+\-*/]/g);
+  if (!tokens || tokens.length % 2 === 0) return null; // must be num (op num)*
+
+  let nums = [Number(tokens[0])];
+  let ops = [];
+  for (let i = 1; i < tokens.length; i += 2) {
+    ops.push(tokens[i]);
+    nums.push(Number(tokens[i + 1]));
+  }
+
+  // pass 1: all * and / , left to right
+  for (let i = 0; i < ops.length; ) {
+    if (ops[i] === "*" || ops[i] === "/") {
+      const a = nums[i], b = nums[i + 1];
+      let r;
+      if (ops[i] === "*") r = a * b;
+      else {
+        if (b === 0 || a % b !== 0) return null;
+        r = a / b;
+      }
+      nums.splice(i, 2, r);
+      ops.splice(i, 1);
+    } else {
+      i++;
+    }
+  }
+  // pass 2: remaining + and -, left to right
+  let result = nums[0];
+  for (let i = 0; i < ops.length; i++) {
+    result = ops[i] === "+" ? result + nums[i + 1] : result - nums[i + 1];
+  }
+  return Number.isInteger(result) ? result : null;
+}
+
+function isValidEquation(str) {
+  if (str.length !== EQ_LENGTH) return false;
+  const eqIdx = str.indexOf("=");
+  if (eqIdx === -1 || str.indexOf("=", eqIdx + 1) !== -1) return false; // exactly one '='
+
+  const left = str.slice(0, eqIdx);
+  const right = str.slice(eqIdx + 1);
+  if (!/^\d+$/.test(right)) return false;
+  if (!/^\d+([+\-*/]\d+)+$/.test(left)) return false; // needs at least one operator
+
+  const result = evaluateExpression(left);
+  return result !== null && result >= 0 && result === Number(right);
+}
+
+// ---------- NORMAL MODE ANSWER POOL: NN[op]NN=NN ----------
 
 function buildNormalPool() {
-  const pool = [];
+  const byOp = { "+": [], "-": [], "*": [], "/": [] };
   for (let a = 1; a <= 99; a++) {
     for (const op of OPERATORS) {
       for (let b = 1; b <= 99; b++) {
@@ -36,35 +91,14 @@ function buildNormalPool() {
           result = a / b;
         }
         if (result < 0 || result > 99) continue;
-        pool.push(`${pad2(a)}${op}${pad2(b)}=${pad2(result)}`);
+        byOp[op].push(`${pad2(a)}${op}${pad2(b)}=${pad2(result)}`);
       }
     }
   }
-  return pool;
+  return byOp;
 }
 
-const NORMAL_RE = /^(\d{2})([+\-*/])(\d{2})=(\d{2})$/;
-
-function isValidNormal(str) {
-  const m = str.match(NORMAL_RE);
-  if (!m) return false;
-  const a = parseInt(m[1], 10);
-  const op = m[2];
-  const b = parseInt(m[3], 10);
-  const result = parseInt(m[4], 10);
-
-  let expected;
-  if (op === "+") expected = a + b;
-  else if (op === "-") expected = a - b;
-  else if (op === "*") expected = a * b;
-  else {
-    if (b === 0 || a % b !== 0) return false;
-    expected = a / b;
-  }
-  return expected === result;
-}
-
-// ---------- HARD MODE: A op B op C = DE (two operators) ----------
+// ---------- HARD MODE ANSWER POOL: A op B op C = DE (two operators) ----------
 
 function precedence(op) {
   return (op === "*" || op === "/") ? 2 : 1;
@@ -93,7 +127,7 @@ function evalTwoOp(a, op1, b, op2, c) {
 }
 
 function buildHardPool() {
-  const pool = [];
+  const byOp = { "+": [], "-": [], "*": [], "/": [] };
   for (let a = 0; a <= 9; a++) {
     for (const op1 of OPERATORS) {
       for (let b = 0; b <= 9; b++) {
@@ -102,28 +136,13 @@ function buildHardPool() {
             if ([a, b, c].filter(n => n === 0).length >= 2) continue; // skip overly trivial equations
             const result = evalTwoOp(a, op1, b, op2, c);
             if (result === null || result < 0 || result > 99) continue;
-            pool.push(`${a}${op1}${b}${op2}${c}=${pad2(result)}`);
+            byOp[op1].push(`${a}${op1}${b}${op2}${c}=${pad2(result)}`);
           }
         }
       }
     }
   }
-  return pool;
-}
-
-const HARD_RE = /^(\d)([+\-*/])(\d)([+\-*/])(\d)=(\d{2})$/;
-
-function isValidHard(str) {
-  const m = str.match(HARD_RE);
-  if (!m) return false;
-  const a = parseInt(m[1], 10);
-  const op1 = m[2];
-  const b = parseInt(m[3], 10);
-  const op2 = m[4];
-  const c = parseInt(m[5], 10);
-  const result = parseInt(m[6], 10);
-  const expected = evalTwoOp(a, op1, b, op2, c);
-  return expected !== null && expected === result;
+  return byOp;
 }
 
 // ---------- MODE CONFIG ----------
@@ -131,27 +150,43 @@ function isValidHard(str) {
 const MODES = {
   normal: {
     label: "Normal",
-    desc: "Guess the equation in 6 tries. One operator, e.g. 12+07=19.",
+    desc: "Guess the equation in 6 tries. Today's answer has one operator — e.g. 12+07=19.",
     pool: buildNormalPool(),
-    isValid: isValidNormal,
     dayOffset: 91,
   },
   hard: {
     label: "Hard",
-    desc: "Guess the equation in 6 tries. Two operators — normal math order applies.",
+    desc: "Guess the equation in 6 tries. Today's answer has two operators — normal math order applies.",
     pool: buildHardPool(),
-    isValid: isValidHard,
     dayOffset: 158,
   },
 };
+
+// Picking from a flat, structurally-ordered pool by day-index alone can
+// still land on long same-operator runs, since the pool was built in
+// operator-grouped order. Instead, the day-index explicitly cycles through
+// the 4 operators first (so you're guaranteed +, -, *, / in rotation, never
+// the same one two days running), then a large-prime multiply picks a
+// varied specific equation *within* that operator's bucket.
+const SHUFFLE_PRIME = 104729;
 
 function getTodaysEquation(modeId) {
   const mode = MODES[modeId];
   const start = new Date(2024, 0, 1);
   const today = new Date();
   const dayIndex = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + mode.dayOffset;
-  return mode.pool[dayIndex % mode.pool.length];
+  const op = OPERATORS[dayIndex % OPERATORS.length];
+  const bucket = mode.pool[op];
+  return bucket[(dayIndex * SHUFFLE_PRIME) % bucket.length];
 }
+
+function randomEquation(modeId) {
+  const pool = MODES[modeId].pool;
+  const op = OPERATORS[Math.floor(Math.random() * OPERATORS.length)];
+  const bucket = pool[op];
+  return bucket[Math.floor(Math.random() * bucket.length)];
+}
+
 
 const state = {
   mode: (localStorage.getItem(MODE_STORAGE_KEY) === "hard") ? "hard" : "normal",
@@ -268,7 +303,7 @@ function submitGuess() {
 
   const guess = state.guesses[state.row].join("");
 
-  if (!MODES[state.mode].isValid(guess)) {
+  if (!isValidEquation(guess)) {
     showStatus("Not a valid equation", true);
     shake(state.row);
     return;
@@ -385,9 +420,8 @@ function applyModeUI() {
 // random=false picks today's equation for whichever mode is now active
 // (used right after switching modes).
 function resetRound(random) {
-  const pool = MODES[state.mode].pool;
   state.answer = random
-    ? pool[Math.floor(Math.random() * pool.length)]
+    ? randomEquation(state.mode)
     : getTodaysEquation(state.mode);
   state.row = 0;
   state.col = 0;
