@@ -751,3 +751,75 @@ button:focus-visible,
   }
   .r34-name { font-size: 18px; }
 }
+
+/* ============================================================
+   COLORFLE
+   ============================================================ */
+
+.cf-main-swatch {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 10px;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+}
+
+.cf-main-hex {
+  font-family: var(--font-mono);
+  letter-spacing: 0.2em;
+  color: var(--ink-dim);
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.colorfle-row {
+  display: grid;
+  grid-template-columns: 32px auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.colorfle-row.correct { border-color: var(--correct); }
+
+.cf-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+.cf-hex {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.cf-channels {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cf-channel {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #22252d;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+.cf-channel.cf-correct { background: var(--correct); color: #14171c; }
+.cf-channel.cf-close   { background: var(--present); color: #14171c; }
+.cf-channel.cf-warm    { background: var(--accent);  color: #14171c; }
+.cf-channel.cf-cold    { background: #2a2e38; color: var(--ink-dim); }
+
+.cf-pct {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-2);
+}
