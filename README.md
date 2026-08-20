@@ -8,7 +8,7 @@ frameworks), hosted free on GitHub Pages.
 > Work In Progress
 
 ## Link
-https://kralstermo-dev.github.io/Daily-Games/
+[https://kralstermo-dev.github.io/Daily-Games/](https://kralstermo-dev.github.io/Website/)
 
 ---
 
