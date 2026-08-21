@@ -1,6 +1,6 @@
 // ============================================================
-// WORDLE CLONE — game logic
-// Plain JS, no build step needed — this file just runs in the browser.
+// WORDLE CLONE - game logic
+// Plain JS, no build step needed - this file just runs in the browser.
 // ============================================================
 
 const WORD_LENGTH = 5;

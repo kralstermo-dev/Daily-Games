@@ -1,7 +1,7 @@
 # Custom flag images
 
 Drop your own flag images in this folder and the game will use them
-automatically — no code changes needed.
+automatically - no code changes needed.
 
 ## How it works
 
@@ -17,7 +17,7 @@ flagcdn.com instead. That means:
 ## Naming
 
 Each file must be named `<code>.png`, where `<code>` is that country's
-2-letter code from `../countries.js` — e.g.:
+2-letter code from `../countries.js` - e.g.:
 
 ```
 flags/us.png   (United States)
@@ -26,16 +26,16 @@ flags/ch.png   (Switzerland)
 flags/jp.png   (Japan)
 ```
 
-Check `../countries.js` for the exact code of any country — it's the
+Check `../countries.js` for the exact code of any country - it's the
 `code:` field on each entry.
 
 ## Sizing tips
 
-- PNG format (to match what the code expects — `.png` extension).
+- PNG format (to match what the code expects - `.png` extension).
 - Any resolution works; something like 320px on the long side is
   plenty, since the game never displays them larger than that.
 - Images are cropped to fill their container (`object-fit: cover`),
-  not stretched — so a non-rectangular flag (Nepal's pennant shape,
+  not stretched - so a non-rectangular flag (Nepal's pennant shape,
   for example) will still get cropped into a rectangle wherever it's
   shown. If you want a specific flag to look right in a rectangular
   box, that cropping/padding needs to happen in the image file itself

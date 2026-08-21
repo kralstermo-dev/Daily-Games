@@ -1,12 +1,12 @@
 // ============================================================
-// NERDLE — guess today's equation
+// NERDLE - guess today's equation
 // Two modes:
 //  - Normal: fixed format NN[op]NN=NN (always 8 chars), one operator,
 //    e.g. "12+07=19".
 //  - Hard: A op B op C = DE (also 8 chars), TWO operators, evaluated
 //    with standard order of operations (* and / before + and -).
-// Both are fixed-position formats — that trades away real Nerdle's
-// fully variable-length terms for reliable validation/scoring — but
+// Both are fixed-position formats - that trades away real Nerdle's
+// fully variable-length terms for reliable validation/scoring - but
 // hard mode still lets you use two operators in one equation, unlike
 // normal mode.
 // ============================================================
@@ -21,7 +21,7 @@ function pad2(n) {
 }
 
 // ---------- GENERAL EQUATION VALIDATION (used for GUESSES in both modes) ----------
-// A guess just needs to be a true, 8-character equation — it doesn't have to
+// A guess just needs to be a true, 8-character equation - it doesn't have to
 // match the answer's exact shape (e.g. "12+34=46" is valid even in Hard mode,
 // which only generates two-operator ANSWERS but never required two-operator
 // GUESSES). Supports any number of +,-,*,/ terms with standard precedence.
@@ -86,7 +86,7 @@ function buildNormalPool() {
         if (op === "+") result = a + b;
         else if (op === "-") result = a - b;
         else if (op === "*") result = a * b;
-        else { // division — must be a clean, positive integer result
+        else { // division - must be a clean, positive integer result
           if (a % b !== 0) continue;
           result = a / b;
         }
@@ -150,13 +150,13 @@ function buildHardPool() {
 const MODES = {
   normal: {
     label: "Normal",
-    desc: "Guess the equation in 6 tries. Today's answer has one operator — e.g. 12+07=19.",
+    desc: "Guess the equation in 6 tries. Today's answer has one operator - e.g. 12+07=19.",
     pool: buildNormalPool(),
     dayOffset: 91,
   },
   hard: {
     label: "Hard",
-    desc: "Guess the equation in 6 tries. Today's answer has two operators — normal math order applies.",
+    desc: "Guess the equation in 6 tries. Today's answer has two operators - normal math order applies.",
     pool: buildHardPool(),
     dayOffset: 158,
   },

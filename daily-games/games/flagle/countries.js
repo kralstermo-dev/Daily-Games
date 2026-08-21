@@ -2,7 +2,7 @@
 // code = ISO 3166-1 alpha-2 (or the closest commonly-used flagcdn code for
 // non-ISO entries like Kosovo), used to fetch the flag image from flagcdn.com
 // lat/lng = approximate centroid, used for distance + direction between guesses
-// Coordinates are approximate — good enough for a casual guessing game.
+// Coordinates are approximate - good enough for a casual guessing game.
 const COUNTRIES = [
   {name:"Afghanistan",code:"af",lat:33.9,lng:67.7},
   {name:"Albania",code:"al",lat:41.2,lng:20.2},

@@ -1,12 +1,12 @@
 // ============================================================
-// FLAGLE — guess the country from a flag
+// FLAGLE - guess the country from a flag
 // Two modes: Zoomed Flag (progressive zoom reveal) and
 // Color Match (pixel-position color comparison against the answer).
 // ============================================================
 
 const MAX_GUESSES = 6;
 // Zoom scale for each guess attempt (starts very zoomed in, reveals more each time).
-// The last level MUST be 1 (full flag, dead-center) — see setZoomStep() below for why.
+// The last level MUST be 1 (full flag, dead-center) - see setZoomStep() below for why.
 const ZOOM_LEVELS = [4, 3, 2.4, 2, 1.6, 1];
 
 // How close two pixels' RGB values need to be (squared Euclidean distance)
@@ -20,7 +20,7 @@ const PIXEL_THRESHOLD_SQ = PIXEL_THRESHOLD * PIXEL_THRESHOLD;
 // renderGuess() / applyModeUI() below.
 const MODES = [
   { id: "zoom", label: "Zoomed Flag", desc: "Guess the country from a zoomed-in flag. It zooms out each guess." },
-  { id: "colormatch", label: "Color Match", desc: "The flag starts blank. Each guess reveals a bit more of the true flag wherever its colors line up — it gets clearer the more you guess." },
+  { id: "colormatch", label: "Color Match", desc: "The flag starts blank. Each guess reveals a bit more of the true flag wherever its colors line up - it gets clearer the more you guess." },
 ];
 const MODE_STORAGE_KEY = "flagle-mode";
 const SHOW_FLAGS_KEY = "flagle-show-flags";
@@ -82,7 +82,7 @@ function loadImage(url, fallbackUrl) {
 // ============================================================
 // FLAG IMAGE SOURCES
 // Every flag is tried locally first (games/flagle/flags/<code>.png), which
-// you can populate with your own images — handy for flags whose real aspect
+// you can populate with your own images - handy for flags whose real aspect
 // ratio (Nepal's pennant shape, Switzerland/Vatican's square, etc.) doesn't
 // sit well cropped into our rectangular boxes. Any country without a local
 // file just falls back to flagcdn.com automatically, so nothing breaks
@@ -111,7 +111,7 @@ function setImgWithFallback(imgEl, code, sizePx) {
 }
 
 // ============================================================
-// COLOR MATCH — pixel-position comparison
+// COLOR MATCH - pixel-position comparison
 // Both flags are stretched to the same w×h grid, then compared
 // pixel by pixel. Matching pixels keep the guess's own color;
 // everything else goes transparent, so only the overlapping
@@ -120,7 +120,7 @@ function setImgWithFallback(imgEl, code, sizePx) {
 
 function stretchDraw(ctx, img, w, h) {
   ctx.clearRect(0, 0, w, h);
-  ctx.drawImage(img, 0, 0, w, h); // stretch to fill — ignores aspect ratio so grids line up
+  ctx.drawImage(img, 0, 0, w, h); // stretch to fill - ignores aspect ratio so grids line up
 }
 
 function pixelMatchRender(guessImg, answerImg, w, h) {
@@ -159,7 +159,7 @@ function pixelMatchRender(guessImg, answerImg, w, h) {
       matched++;
       matchedMask[p] = 1;
     } else {
-      outData[i + 3] = 0; // transparent — page background shows through
+      outData[i + 3] = 0; // transparent - page background shows through
     }
   }
   outCtx.putImageData(outImageData, 0, 0);
@@ -167,11 +167,11 @@ function pixelMatchRender(guessImg, answerImg, w, h) {
 }
 
 // Canvas size used for both the main viewport reveal and the pixel-match
-// comparison grid — keep these in sync.
+// comparison grid - keep these in sync.
 const REVEAL_W = 280, REVEAL_H = 187;
 
 // Renders the ANSWER flag on the main viewport, showing only the pixels that
-// have matched in ANY guess so far this round (state.revealedMask) — so the
+// have matched in ANY guess so far this round (state.revealedMask) - so the
 // picture gets clearer and more complete with every guess, not just the
 // latest one.
 async function renderAccumulatedReveal() {
@@ -185,7 +185,7 @@ async function renderAccumulatedReveal() {
 
   for (let p = 0; p < state.revealedMask.length; p++) {
     if (!state.revealedMask[p]) {
-      data[p * 4 + 3] = 0; // not yet discovered by any guess — stays transparent
+      data[p * 4 + 3] = 0; // not yet discovered by any guess - stays transparent
     }
   }
   ctx.putImageData(imageData, 0, 0);
@@ -274,7 +274,7 @@ function setup() {
   state.revealedMask = new Uint8Array(REVEAL_W * REVEAL_H); // nothing discovered yet this round
 
   const h = hashString(state.answer.code);
-  // Keep the crop point closer to center (35–65%) — leaves enough "overscan" at
+  // Keep the crop point closer to center (35–65%) - leaves enough "overscan" at
   // every non-final zoom level that the flag always fully covers its frame.
   state.anchorX = 35 + (h % 31);
   state.anchorY = 35 + ((h >> 8) % 31);
@@ -311,7 +311,7 @@ function updateZoom() {
   setZoomStep(level);
 }
 
-// A zoom of 1 means the image is exactly the size of its frame — at that size
+// A zoom of 1 means the image is exactly the size of its frame - at that size
 // any off-center crop point leaves a gap on one side. So whenever we're at the
 // full-size step, force the crop point back to dead-center (50%/50%) instead
 // of using the country's usual off-center anchor.
@@ -329,7 +329,7 @@ function arrowSvg(deg) {
 }
 
 // ============================================================
-// COLOR MATCH MODE — per-guess rendering
+// COLOR MATCH MODE - per-guess rendering
 // ============================================================
 
 async function fillColorMatchRow(row, country, isCorrect) {
@@ -354,7 +354,7 @@ async function fillColorMatchRow(row, country, isCorrect) {
     iconEl.src = dataUrl; // the row's small icon still shows just THIS guess's own match
 
     // Fold this guess's matches into the running total, then re-render the
-    // main viewport from the accumulated set — so it gets more complete with
+    // main viewport from the accumulated set - so it gets more complete with
     // every guess instead of only reflecting the latest one.
     for (let p = 0; p < matchedMask.length; p++) {
       if (matchedMask[p]) state.revealedMask[p] = 1;
@@ -366,7 +366,7 @@ async function fillColorMatchRow(row, country, isCorrect) {
       renderAccumulatedReveal();
     }
   } catch (err) {
-    pctEl.textContent = "—";
+    pctEl.textContent = "-";
     console.warn("Color match unavailable:", err);
   }
 }
@@ -431,7 +431,7 @@ guessForm.addEventListener("submit", (e) => {
   const country = COUNTRIES.find(c => c.name.toLowerCase() === typed.toLowerCase());
 
   if (!country) {
-    showStatus("Not a recognized country name — pick from the suggestions", true);
+    showStatus("Not a recognized country name - pick from the suggestions", true);
     return;
   }
   if (state.guesses.some(g => g.code === country.code)) {
@@ -568,11 +568,11 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Runs last, after every listener above is already attached — if anything in
+// Runs last, after every listener above is already attached - if anything in
 // here ever throws, Settings/autocomplete/mode-switching still work.
 try {
   setup();
 } catch (err) {
   console.error("Flagle setup failed:", err);
-  showStatus("Something went wrong loading today's flag — try refreshing.", true);
+  showStatus("Something went wrong loading today's flag - try refreshing.", true);
 }

@@ -6,7 +6,7 @@
 //    Scored like Wordle: green = right color in the right slot,
 //    yellow = right color, wrong slot, gray = not part of the mix.
 //  - Hard: same idea with 4 colors / 4 size slots.
-//  - Impossible: free-form hex-code guessing (the original mode) —
+//  - Impossible: free-form hex-code guessing (the original mode)  - 
 //    genuinely much harder since there's no fixed palette to reason from.
 // ============================================================
 
@@ -141,7 +141,7 @@ function parseHex(str) {
   };
 }
 
-// Tiered closeness per channel — direction plus a rough magnitude bucket,
+// Tiered closeness per channel - direction plus a rough magnitude bucket,
 // not the exact numeric difference (keeps some guessing challenge).
 function channelFeedback(guessVal, answerVal) {
   const diff = guessVal - answerVal;
@@ -159,8 +159,8 @@ const ARROW = { higher: "&uarr;", lower: "&darr;", exact: "&check;" };
 
 const MODES = [
   { id: "normal", label: "Normal", kind: "mix", desc: "Pick which 3 colors go in the Small/Medium/Large slots to match the mix." },
-  { id: "hard", label: "Hard", kind: "mix", desc: "Same idea with 4 colors and 4 size slots — Small through XL." },
-  { id: "impossible", label: "Impossible", kind: "hex", desc: "No palette this time — guess the exact hex code in 6 tries." },
+  { id: "hard", label: "Hard", kind: "mix", desc: "Same idea with 4 colors and 4 size slots - Small through XL." },
+  { id: "impossible", label: "Impossible", kind: "hex", desc: "No palette this time - guess the exact hex code in 6 tries." },
 ];
 
 // ============================================================
@@ -327,6 +327,7 @@ function renderMixGuessRow(guessIds, feedback, blended, pct) {
   const solved = feedback.every(f => f === "correct");
   row.className = "mix-guess-row" + (solved ? " correct" : "");
   row.innerHTML = `
+    <span class="cf-swatch" style="background:rgb(${blended.r},${blended.g},${blended.b})" title="the color your guess made"></span>
     <div class="mix-guess-tiles">
       ${guessIds.map((id, i) => `<span class="mix-tile mix-${feedback[i]}" style="background:${PALETTE[id].hex}"></span>`).join("")}
     </div>
@@ -370,7 +371,7 @@ function endMixGame(won) {
   playAgainBtn.classList.add("show");
   const cfg = MIX_CONFIG[state.mode];
   const names = state.mixAnswer.map((id, i) => `${cfg.tierLabels[i]}: ${PALETTE[id].id}`).join(", ");
-  showStatus(won ? "Solved! 🎉" : `The mix was — ${names}`);
+  showStatus(won ? "Solved! 🎉" : `The mix was ${names}`);
 }
 
 // ============================================================

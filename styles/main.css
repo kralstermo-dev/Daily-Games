@@ -1,5 +1,5 @@
 /* ============================================================
-   -DLE HUB — shared design tokens
+   -DLE HUB - shared design tokens
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap');
@@ -10,12 +10,12 @@
   --bg-panel-hover: #232836;
   --ink: #f1ede4;
   --ink-dim: #a8aab0;
-  --accent: #e8a33d;      /* marquee gold — "solved" */
-  --accent-2: #5fa8a0;    /* muted teal — "close" */
+  --accent: #e8a33d;      /* marquee gold - "solved" */
+  --accent-2: #5fa8a0;    /* muted teal - "close" */
   --line: #333844;
   --danger: #c96a4f;
-  --correct: #5fb87a;     /* green — right letter, right spot (Wordle, Nerdle, etc.) */
-  --present: #e3c04c;     /* yellow — right letter, wrong spot */
+  --correct: #5fb87a;     /* green - right letter, right spot (Wordle, Nerdle, etc.) */
+  --present: #e3c04c;     /* yellow - right letter, wrong spot */
 
   --font-display: 'Fraunces', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
@@ -597,7 +597,7 @@ button:focus-visible,
   font-weight: 700;
 }
 
-/* Color Match mode guess rows: name / % / masked flag icon — see cm-mode below */
+/* Color Match mode guess rows: name / % / masked flag icon - see cm-mode below */
 .flagle-row.cm-mode {
   grid-template-columns: 1fr auto 44px;
 }
