@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Colorfle | Daily Games</title>
-<link rel="stylesheet" href="../../../styles/main.css?v=5">
+<link rel="stylesheet" href="../../../styles/main.css?v=6">
 </head>
 <body>
 
@@ -15,33 +15,50 @@
 <div class="game-shell">
   <div class="game-header">
     <h1>Colorfle</h1>
-    <p>Guess the hex code of this color in 6 tries.</p>
+    <p id="mode-desc">Pick which 3 colors go in the Small/Medium/Large slots to match the mix.</p>
   </div>
 
-  <div id="status" class="status-msg" role="status" aria-live="polite"></div>
+  <div class="mode-select" id="mode-select" role="tablist" aria-label="Colorfle mode"></div>
 
-  <div id="swatch" class="cf-main-swatch"></div>
-  <div id="swatch-hex" class="cf-main-hex">?  ?  ?  ?  ?  ?</div>
+  <div id="status" class="status-msg" role="status" aria-live="polite"></div>
   <div id="attempts-left" class="attempts-left"></div>
 
-  <form id="guess-form" class="guess-form">
-    <div class="autocomplete">
-      <input
-        id="guess-input"
-        type="text"
-        placeholder="e.g. 3fae02"
-        maxlength="7"
-        autocomplete="off"
-        required>
-    </div>
-    <button type="submit">Guess</button>
-  </form>
+  <!-- MIX MODE (Normal / Hard) -->
+  <div id="mix-ui">
+    <div id="mix-swatch" class="cf-main-swatch"></div>
 
-  <button id="play-again" type="button" class="play-again">Play a random color</button>
+    <div id="mix-slots" class="mix-slots"></div>
+    <button id="mix-guess-btn" type="button" class="mix-guess-btn" disabled>Guess</button>
 
-  <div id="guess-list" class="guess-list"></div>
+    <div id="mix-palette" class="mix-palette"></div>
+
+    <div id="mix-guess-list" class="guess-list"></div>
+  </div>
+
+  <!-- HEX MODE (Impossible) -->
+  <div id="hex-ui" class="hidden">
+    <div id="hex-swatch" class="cf-main-swatch"></div>
+    <div id="hex-swatch-hex" class="cf-main-hex">?  ?  ?  ?  ?  ?</div>
+
+    <form id="hex-guess-form" class="guess-form">
+      <div class="autocomplete">
+        <input
+          id="hex-guess-input"
+          type="text"
+          placeholder="e.g. 3fae02"
+          maxlength="7"
+          autocomplete="off"
+          required>
+      </div>
+      <button type="submit">Guess</button>
+    </form>
+
+    <div id="hex-guess-list" class="guess-list"></div>
+  </div>
+
+  <button id="play-again" type="button" class="play-again">Play random</button>
 </div>
 
-<script src="game.js?v=5"></script>
+<script src="game.js?v=6"></script>
 </body>
 </html>
