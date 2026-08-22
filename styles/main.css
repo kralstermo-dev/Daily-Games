@@ -918,3 +918,35 @@ button:focus-visible,
 .mix-tile.mix-correct { border-color: var(--correct); }
 .mix-tile.mix-present { border-color: var(--present); }
 .mix-tile.mix-absent  { border-color: #2a2e38; opacity: 0.55; }
+
+/* ============================================================
+   ANGLE
+   ============================================================ */
+
+.angle-diagram {
+  width: min(300px, 88vw);
+  aspect-ratio: 1;
+  margin: 0 auto 10px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg-panel);
+}
+
+.angle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.angle-row.correct { border-color: var(--correct); }
+
+.angle-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  min-width: 44px;
+}
