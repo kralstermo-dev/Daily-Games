@@ -1,4 +1,4 @@
-# [Your Site Name]
+# Morrmo Hub
 
 A personal site with a few different sections — Daily Games is the
 first one built out; MC Tools, General Tools, and Geo are scaffolded
